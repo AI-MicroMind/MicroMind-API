@@ -15,8 +15,9 @@ const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
   const cookieOptions = {
-    expiresIn:
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    expiresIn: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
     httpOnly: true,
   };
   if (process.env.NODE_ENV == 'production') cookikeOptions.secure = true;
@@ -86,6 +87,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   // Verify token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
+  // console.log(decoded);
+
   // check if the user still available
   const currentUser = await User.findById(decoded.id);
 
@@ -96,6 +99,6 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   //? Check if user changed password after token was issued
 
-  res.user = currentUser;
+  req.user = currentUser;
   next();
 });
