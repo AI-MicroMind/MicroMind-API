@@ -13,6 +13,8 @@ const compression = require('compression');
 const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
+const messageRouter = require('./routes/messageRoutes');
+const chatRouter = require('./routes/chatRoutes');
 
 const app = express();
 
@@ -48,6 +50,8 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/messages', messageRouter);
+app.use('/api/v1/chats', chatRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
