@@ -7,7 +7,7 @@ const messageSchema = new mongoose.Schema(
     chat: {
       type: mongoose.Schema.ObjectId,
       ref: 'Chat',
-      // required: [true, 'A message must belongs to a chat'],
+      required: [true, 'A message must belongs to a chat'],
     },
     sender: {
       type: String,

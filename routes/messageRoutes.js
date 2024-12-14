@@ -1,11 +1,10 @@
 const express = require('express');
 
 const messageController = require('../controllers/messageController');
-const authController = require('../controllers/authController');
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
-router.post('/send-message/', messageController.sendMessage);
-router.get('/', authController.protect, messageController.sendMessage);
+router.post('/', messageController.sendMessage);
+router.get('/', messageController.loadChatMessages);
 
 module.exports = router;

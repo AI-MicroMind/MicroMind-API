@@ -3,36 +3,44 @@ const AppError = require('../utils/AppError');
 
 const Message = require('../models/messageModel');
 
-async function query(data) {
-  const response = await fetch(
-    'https://chatflow-aowb.onrender.com/api/v1/prediction/307171e5-e3d9-4e15-9494-ff5971225fe5',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    }
-  );
+async function query(data, chatUrl) {
+  const response = await fetch(chatUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
   const result = await response.json();
   return result;
 }
 
-//..........................
+//..........................................................
 
 exports.sendMessage = catchAsync(async (req, res, next) => {
   const { text, photo, voice } = req.body;
 
   const [botResponse, userMessage] = await Promise.all([
-    query({
-      question: req.body.text || '',
-      overrideConfig: {
-        systemMessage: 'example',
-        maxIterations: 1,
-        sessionId: 'example',
-        memoryKey: 'example',
+    query(
+      {
+        question: req.body.text || '',
+        uploads: [
+          {
+            data: 'data:image/png;base64,iVBORw0KGgdM2uN0', //base64 string or url
+            type: 'file', // file | url
+            name: 'Flowise.png',
+            mime: 'image/png',
+          },
+        ],
+        overrideConfig: {
+          systemMessage: 'example',
+          maxIterations: 1,
+          sessionId: req.params.chatId,
+          memoryKey: 'example',
+        },
       },
-    }),
+      req.body.chatUrl
+    ),
     Message.create({
       chat: req.params.chatId,
       sender: 'user',
@@ -68,6 +76,7 @@ exports.loadChatMessages = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
+    results: messages.length,
     data: {
       messages,
     },
