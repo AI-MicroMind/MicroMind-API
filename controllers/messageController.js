@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { rootPath } = require('./utils'); // Assuming you have a utils file to get the root path
+// const { rootPath } = require('./utils'); // Assuming you have a utils file to get the root path
 const multer = require('multer');
 
 const catchAsync = require('../utils/catchAsync');
@@ -69,6 +69,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     // destination: 'public/chat-uploads/',
     // filename: 'file-1734150175524-kitten.png',
     // console.log(req.file);
+    console.log(req.get('host'));
     const filePath = path.join(req.get('host'), req.file.path);
     if (req.file.mimetype.startsWith('image')) {
       uploads.push({
