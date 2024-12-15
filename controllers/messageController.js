@@ -93,12 +93,12 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       );
       // console.log(fileData);
       // console.log(fileData);
-      const base64Data = fileData.toString('base64');
+      // const base64Data = fileData.toString('base64');
       // console.log(base64Data);
       // console.log(`base64 data: ${base64Data}`);
       uploads.push({
-        data: `data:${req.file.mimetype};base64,${base64Data}`,
-        type: 'file:full',
+        data: filePath,
+        type: 'url',
         name: req.file.filename,
         mime: req.file.mimetype,
       });
