@@ -60,7 +60,12 @@ async function query(data, chatUrl) {
 exports.sendMessage = catchAsync(async (req, res, next) => {
   const { text, chatUrl } = req.body;
 
+  console.log(req.body);
+
+  console.log(req.file);
+
   let uploads = [];
+  const fileName = req.file.filename || undefined;
   if (req.file) {
     console.log(req.file);
 
@@ -76,9 +81,30 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
         name: req.file.filename,
         mime: 'image/jpeg',
       });
+    } else if (
+      req.file.mimetype.startsWith('text') ||
+      req.file.mimetype.startsWith('application/pdf') || // PDF files
+      req.file.mimetype.startsWith('application/msword') || // doc files
+      req.file.mimetype.startsWith('application/vnd.openxmlformats') || // docx and xlsx
+      req.file.mimetype.startsWith('application/vnd.ms-excel') //xls
+    ) {
+      const fileData = fs.readFileSync(
+        `${__dirname}/../public/chat-uploads/${req.file.filename}`
+      );
+      // console.log(fileData);
+      // console.log(fileData);
+      const base64Data = fileData.toString('base64');
+      // console.log(base64Data);
+      // console.log(`base64 data: ${base64Data}`);
+      uploads.push({
+        data: `data:${req.file.mimetype};base64,${base64Data}`,
+        type: 'file:full',
+        name: req.file.filename,
+        mime: req.file.mimetype,
+      });
     }
 
-    console.dir(`Uploads: ${uploads}`);
+    console.log(uploads[0]);
 
     // console.log(filePath);
     // const fileData = fs.readFileSync(filePath);
@@ -105,6 +131,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       chat: req.params.chatId,
       sender: 'user',
       text,
+      file: fileName,
       // photo,
       // voice,
     }),
@@ -118,11 +145,11 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   });
 
   // Save bot response to database
-  Message.create({
-    chat: req.params.chatId,
-    sender: 'bot',
-    text: botResponse.text,
-  });
+  // Message.create({
+  //   chat: req.params.chatId,
+  //   sender: 'bot',
+  //   text: botResponse.text,
+  // });
 });
 
 //..........................................................

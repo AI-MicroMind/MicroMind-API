@@ -52,14 +52,14 @@ const messageSchema = new mongoose.Schema(
 );
 
 // prevent empty messages from
-messageSchema.pre('save', function (next) {
-  if (!this.text && !this.photo && !this.voice) {
-    return next(
-      new AppError('You cannot send empty message in the chat.', 400)
-    );
-  }
-  next();
-});
+// messageSchema.pre('save', function (next) {
+//   if (!this.text && !this.file) {
+//     return next(
+//       new AppError('You cannot send empty message in the chat.', 400)
+//     );
+//   }
+//   next();
+// });
 
 const Message = mongoose.model('Message', messageSchema);
 
