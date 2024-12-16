@@ -1,6 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+// File Loaders
+const pdf = require('pdf-parse');
+const mammoth = require('mammoth');
+const xlsx = require('xlsx');
 
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
@@ -10,7 +14,13 @@ const multerFilter = (req, file, cb) => {
   if (
     file.mimetype.startsWith('image') ||
     file.mimetype.startsWith('audio') ||
-    file.mimetype.startsWith('text')
+    file.mimetype === 'application/pdf' ||
+    file.mimetype === 'application/msword' || // doc files
+    file.mimetype ===
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || // docx
+    file.mimetype === 'application/vnd.ms-excel' || //xls
+    file.mimetype ===
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' //xls
   ) {
     cb(null, true);
   } else {
@@ -37,12 +47,6 @@ const upload = multer({
 
 exports.uploadMessagefile = upload.single('file');
 
-// const fileToBase64 = catchAsync(async (req, res) => {
-//   const filePath = './public/files/uploads/your_file.jpg'; // Replace with actual file path
-//   const data = await fs.readFile(filePath, 'base64');
-//   res.status(200).json({ base64Data: data });
-// });
-
 //--------------------------------------------------
 
 async function query(data, chatUrl) {
@@ -60,20 +64,19 @@ async function query(data, chatUrl) {
 exports.sendMessage = catchAsync(async (req, res, next) => {
   const { text, chatUrl } = req.body;
 
-  console.log(req.body);
-
-  console.log(req.file);
-
   let uploads = [];
-  const fileName = req.file.filename || undefined;
-  if (req.file) {
-    console.log(req.file);
+  let fileName;
 
-    console.log(req.get('host'));
+  // If there is uploaded files
+  if (req.file) {
+    fileName = req.file.filename;
+
     // const filePath = path.join(req.get('host'), req.file.path);
     const filePath = `${req.protocol}://${req.get('host')}/chat-uploads/${
       req.file.filename
     }`;
+
+    // Handle images
     if (req.file.mimetype.startsWith('image')) {
       uploads.push({
         data: filePath, //base64 string or url
@@ -81,37 +84,59 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
         name: req.file.filename,
         mime: 'image/jpeg',
       });
-    } else if (
-      req.file.mimetype.startsWith('text') ||
-      req.file.mimetype.startsWith('application/pdf') || // PDF files
-      req.file.mimetype.startsWith('application/msword') || // doc files
-      req.file.mimetype.startsWith('application/vnd.openxmlformats') || // docx and xlsx
-      req.file.mimetype.startsWith('application/vnd.ms-excel') //xls
+    }
+
+    // Handle PDF files
+    else if (
+      req.file.mimetype === 'application/pdf' // PDF files
     ) {
-      const fileData = fs.readFileSync(
-        `${__dirname}/../public/chat-uploads/${req.file.filename}`
-      );
-      // console.log(fileData);
-      // console.log(fileData);
-      // const base64Data = fileData.toString('base64');
-      // console.log(base64Data);
-      // console.log(`base64 data: ${base64Data}`);
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const pdfData = await pdf(fileBuffer); // Extract text from PDF
       uploads.push({
-        data: filePath,
-        type: 'url',
+        data: pdfData.text, // Extracted text
+        type: 'file:full',
         name: req.file.filename,
         mime: req.file.mimetype,
       });
     }
 
-    console.log(uploads[0]);
+    // Handle word document doc or docx
+    else if (
+      req.file.mimetype === 'application/msword' || // doc files
+      req.file.mimetype ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // docx
+    ) {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const wordData = await mammoth.extractRawText({ buffer: fileBuffer });
+      uploads.push({
+        data: wordData.value, // Extracted text
+        type: 'file:full',
+        name: req.file.filename,
+        mime: req.file.mimetype,
+      });
+    }
 
-    // console.log(filePath);
-    // const fileData = fs.readFileSync(filePath);
-    // console.log(`file Data: ${fileData}`);
-    // const fileToBase64 = fileData.toString('base64');
+    // Handle excel sheet xls or xlsx
+    else if (
+      req.file.mimetype === 'application/vnd.ms-excel' || //xls
+      req.file.mimetype ===
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' //xls
+    ) {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const workbook = xlsx.read(fileBuffer, { type: 'buffer' });
 
-    // console.log(fileToBase64);
+      // Extract data from the first sheet
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const excelData = xlsx.utils.sheet_to_json(worksheet, { header: 1 }); // Extract as 2D array
+
+      uploads.push({
+        data: JSON.stringify(excelData), // Convert the array to JSON
+        type: 'file:full',
+        name: req.file.filename,
+        mime: req.file.mimetype,
+      });
+    }
   }
   const [botResponse, userMessage] = await Promise.all([
     query(
@@ -136,6 +161,9 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       // voice,
     }),
   ]);
+  console.log(botResponse);
+  if (botResponse.status === 'error')
+    return next(new AppError('An error occured with your message. Try again.'));
 
   res.status(200).json({
     status: 'success',
@@ -145,11 +173,11 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   });
 
   // Save bot response to database
-  // Message.create({
-  //   chat: req.params.chatId,
-  //   sender: 'bot',
-  //   text: botResponse.text,
-  // });
+  Message.create({
+    chat: req.params.chatId,
+    sender: 'bot',
+    text: botResponse.text,
+  });
 });
 
 //..........................................................
@@ -219,30 +247,3 @@ exports.loadChatMessages = catchAsync(async (req, res, next) => {
     },
   });
 });
-
-//-------------------------------------------------------------
-
-// const {FlowiseClient} =  require('flowise-sdk')
-
-// async function testStreaming() {
-//   const client = new FlowiseClient({ baseUrl: 'http://localhost:3000' });
-
-//   try {
-//     // For streaming prediction
-//     const prediction = await client.createPrediction({
-//       chatflowId: '<chatflow-id>',
-//       question: 'What is the capital of France?',
-//       streaming: true,
-//     });
-
-//     for await (const chunk of prediction) {
-//       // {event: "token", data: "hello"}
-//       console.log(chunk);
-//     }
-//   } catch (error) {
-//     console.error('Error:', error);
-//   }
-// }
-
-// // Run streaming test
-// testStreaming();
