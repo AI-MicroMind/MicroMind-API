@@ -6,7 +6,7 @@ const userController = require('../controllers/userController');
 const router = express.Router();
 
 router.post('/signup', authController.signup);
-router.get('/login', authController.login);
+router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
 // Protect all next routes from guests
