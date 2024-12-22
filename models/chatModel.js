@@ -20,7 +20,7 @@ const chatSchema = new mongoose.Schema(
     },
     chatPhoto: {
       type: String,
-      // default: 'chat-default.jpg',
+      default: 'default.jpg',
     },
   },
   { timestamps: true }

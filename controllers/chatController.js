@@ -53,11 +53,13 @@ exports.createChat = catchAsync(async (req, res, next) => {
   });
 });
 
+//TODO LATEST MESSAGE + Sort chat by updates +
+
 exports.getMyChats = catchAsync(async (req, res, next) => {
   const chats = await Chat.find({ userId: req.user.id }).sort('-createdAt');
 
-  if (chats.length === 0)
-    return next(new AppError("Sorry! You don't have any chats yet."));
+  // if (chats.length === 0)
+  //   return next(new AppError("Sorry! You don't have any chats yet."));
 
   res.status(200).json({
     status: 'success',
@@ -67,18 +69,6 @@ exports.getMyChats = catchAsync(async (req, res, next) => {
     },
   });
 });
-
-//? will it be needed?
-// exports.getChat = catchAsync(async (req, res, next) => {
-//   const chat = await Chat.findByIdAndDelete(req.params.chatId);
-
-//   res.status(200).json({
-//     status: 'success',
-//     data: {
-//       chat,
-//     },
-//   });
-// });
 
 // User deletes one of his chat
 exports.deleteChat = catchAsync(async (req, res, next) => {
