@@ -1,6 +1,6 @@
 const fs = require('fs');
-const path = require('path');
 const multer = require('multer');
+
 // File Loaders
 const pdf = require('pdf-parse');
 const mammoth = require('mammoth');
@@ -69,6 +69,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   // If there is uploaded files
   if (req.file) {
+    console.log(req.file);
     fileName = req.file.filename;
 
     // const filePath = path.join(req.get('host'), req.file.path);
@@ -137,6 +138,21 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
         mime: req.file.mimetype,
       });
     }
+
+    // Handle Audio Uploads
+    if (req.file.mimetype.startsWith('audio')) {
+      const audioBase64 = fs.readFileSync(req.file.path).toString('base64');
+      // console.log(audioBase64);
+      const audioData = `data:${req.file.mimetype};codecs=opus;base64,${audioBase64}`;
+
+      uploads.push({
+        data: audioData, // base64 string
+        type: 'audio',
+        name: req.file.filename,
+        mime: 'audio/webm',
+      });
+      console.log(`DONE UPLOADING`);
+    }
   }
   const [botResponse, userMessage] = await Promise.all([
     query(
@@ -180,56 +196,6 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   });
 });
 
-//..........................................................
-
-// exports.sendMessage = catchAsync(async (req, res, next) => {
-//   const { text, photo, voice } = req.body;
-
-//   const [botResponse, userMessage] = await Promise.all([
-//     query(
-//       {
-//         question: req.body.text || '',
-//         uploads: [
-//           {
-//             data: 'data:image/png;base64,iVBORw0KGgdM2uN0', //base64 string or url
-//             type: 'file', // file | url
-//             name: 'Flowise.png',
-//             mime: 'image/png',
-//           },
-//         ],
-//         overrideConfig: {
-//           systemMessage: 'example',
-//           maxIterations: 1,
-//           sessionId: req.params.chatId,
-//           memoryKey: 'example',
-//         },
-//       },
-//       req.body.chatUrl
-//     ),
-//     Message.create({
-//       chat: req.params.chatId,
-//       sender: 'user',
-//       text,
-//       photo,
-//       voice,
-//     }),
-//   ]);
-
-//   res.status(200).json({
-//     status: 'success',
-//     data: {
-//       botResponse,
-//     },
-//   });
-
-//   // Save bot response to database
-//   Message.create({
-//     chat: req.params.chatId,
-//     sender: 'bot',
-//     text: botResponse.text,
-//   });
-// });
-
 exports.loadChatMessages = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
@@ -247,3 +213,37 @@ exports.loadChatMessages = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+// Used to star/unstar a message
+exports.starMessage = catchAsync(async (req, res, next) => {
+  const message = await Message.findById(req.params.messageId);
+
+  // Toggle star on that message
+  message.starred = !message.starred;
+
+  await message.save();
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      message,
+    },
+  });
+});
+
+exports.getChatStarredMessages = catchAsync(async (req, res, next) => {
+  const starredMessages = await Messages.find({ chat: req.params.chatId });
+
+  // if(!starredMessages) return next(new AppError("Sorry! You don't have any starred messages for that chat."))
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      starredMessages,
+    },
+  });
+});
+
+// exports.getStarredMessages = catchAsync(async(req.res.next) => {
+
+// })
