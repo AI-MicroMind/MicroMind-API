@@ -1,8 +1,10 @@
-const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
 
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
+const SendEmail = require('../utils/email');
 const User = require('../models/userModel');
 
 const signToken = (id) => {
@@ -34,15 +36,85 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
+// exports.signup = catchAsync(async (req, res, next) => {
+//   const newUser = await User.create({
+//     fullName: req.body.fullName,
+//     email: req.body.email,
+//     password: req.body.password,
+//     confirmPassword: req.body.confirmPassword,
+//   });
+// createSendToken(newUser, 201, res);
+// });
+
 exports.signup = catchAsync(async (req, res, next) => {
+  // const { fullName, email, password, confirmPassword } = req.body;
+  // const newUser = await User.create({
+  //   fullName,
+  //   email,
+  //   password,
+  //   confirmPassword,
+  // });
   const newUser = await User.create({
     fullName: req.body.fullName,
     email: req.body.email,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
   });
-  createSendToken(newUser, 201, res);
+
+  console.log(newUser);
+
+  // Create verification token
+  const verificationToken = newUser.createVerificationToken();
+  await newUser.save({ validateBeforeSave: false });
+
+  // send email with verification token
+  const verificationUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/verify-email/${verificationToken}`;
+
+  const message = `Verify your email by clicking the following link: ${verificationUrl}`;
+
+  try {
+    await SendEmail({
+      email: newUser.email,
+      subject: 'AI MicroMind Email Verification',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email',
+    });
+  } catch (err) {
+    newUser.verificationToken = undefined;
+    await newUser.save({ validateBeforeSave: false });
+    console.log(err);
+    return next(
+      new AppError('There is an error sending the email. Try again later.', 500)
+    );
+  }
 });
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    verificationToken: hashedToken,
+    //? expire date?
+  });
+  if (!user) return next('Token is invalid', 400);
+  user.isVerified = true;
+  user.verificationToken = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  // Send token after email verification
+  createSendToken(user, 200, res);
+});
+
+// exports.sendVerificationEmail;
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
@@ -65,6 +137,69 @@ exports.logout = catchAsync(async (req, res, next) => {
   res
     .status(200)
     .json({ status: 'success', message: 'Logged out successfully' });
+});
+
+// RESET PASSWORD
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Check if the email in the database
+  const user = await User.findOne({ email: req.body.email });
+  if (!user)
+    return next(new AppError('There is no user with this email address', 400));
+
+  // 2) Generate random token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // 3) Send email to user
+  const resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/ap1/v1/resetPassword/${resetToken}`;
+  const message = `Forgot your password? You can reset your password using the next link: ${resetUrl}`;
+  try {
+    await SendEmail({
+      email: user.email,
+      subject: 'AI MicroMind Reset Password',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Reset password token is sent to email.',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await newUser.save({ validateBeforeSave: false });
+    console.log(err);
+    return next(
+      new AppError('There is an error sending the email. Try again later.', 500)
+    );
+  }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  // Get the user based on the token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+  // If token is not expired, or the user doesn't exists, reset your password
+  if (!user) return next(new AppError('Token is invalid or expired.'));
+
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save({ validateModifiedOnly: true });
+
+  //TODO Update changedPassword at
+
+  createSendToken(user, 200, res);
 });
 
 // To protect API endpoints from unsigned in users
