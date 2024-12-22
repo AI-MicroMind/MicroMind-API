@@ -66,6 +66,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   let uploads = [];
   let fileName;
+  let messageType = 'text';
 
   // If there is uploaded files
   if (req.file) {
@@ -79,6 +80,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
     // Handle images
     if (req.file.mimetype.startsWith('image')) {
+      messageType = 'photo';
       uploads.push({
         data: filePath, //base64 string or url
         type: 'url', // file | url
@@ -91,6 +93,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     else if (
       req.file.mimetype === 'application/pdf' // PDF files
     ) {
+      messageType = 'file';
       const fileBuffer = fs.readFileSync(req.file.path);
       const pdfData = await pdf(fileBuffer); // Extract text from PDF
       uploads.push({
@@ -107,6 +110,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       req.file.mimetype ===
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // docx
     ) {
+      messageType = 'file';
       const fileBuffer = fs.readFileSync(req.file.path);
       const wordData = await mammoth.extractRawText({ buffer: fileBuffer });
       uploads.push({
@@ -123,6 +127,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       req.file.mimetype ===
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' //xls
     ) {
+      messageType = 'file';
       const fileBuffer = fs.readFileSync(req.file.path);
       const workbook = xlsx.read(fileBuffer, { type: 'buffer' });
 
@@ -141,6 +146,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
     // Handle Audio Uploads
     if (req.file.mimetype.startsWith('audio')) {
+      messageType = 'audio';
       const audioBase64 = fs.readFileSync(req.file.path).toString('base64');
       // console.log(audioBase64);
       const audioData = `data:${req.file.mimetype};codecs=opus;base64,${audioBase64}`;
@@ -173,6 +179,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       sender: 'user',
       text,
       file: fileName,
+      type: messageType,
       // photo,
       // voice,
     }),

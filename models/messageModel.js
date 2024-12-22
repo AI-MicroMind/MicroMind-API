@@ -37,6 +37,11 @@ const messageSchema = new mongoose.Schema(
         enum: ['photo', 'voice', 'file'],
       },
     },
+    type: {
+      type: String,
+      enum: ['text', 'photo', 'file', 'audio'],
+      default: 'text',
+    },
     starred: {
       type: Boolean,
       default: false,
