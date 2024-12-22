@@ -2,6 +2,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 
 const Chat = require('../models/chatModel');
+const Message = require('../models/messageModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 
@@ -56,16 +57,34 @@ exports.createChat = catchAsync(async (req, res, next) => {
 //TODO LATEST MESSAGE + Sort chat by updates +
 
 exports.getMyChats = catchAsync(async (req, res, next) => {
-  const chats = await Chat.find({ userId: req.user.id }).sort('-createdAt');
+  const chats = await Chat.find({ userId: req.user.id })
+    .select('-__v -updatedAt')
+    .sort('-createdAt');
 
   // if (chats.length === 0)
   //   return next(new AppError("Sorry! You don't have any chats yet."));
+
+  const chatsWithLatestMessage = await Promise.all(
+    chats.map(async (chat) => {
+      const latestMessage = await Message.findOne({ chat: chat._id })
+        .sort('-createdAt')
+        .select('text file createdAt sender');
+      return { ...chat._doc, latestMessage };
+    })
+  );
+
+  // sort chat in descending order based on the latest message createdAt
+  chatsWithLatestMessage.sort((a, b) => {
+    const aTime = a.latestMessage;
+    const bTime = b.latestMessage;
+    return bTime - aTime;
+  });
 
   res.status(200).json({
     status: 'success',
     results: chats.length,
     data: {
-      chats,
+      chats: chatsWithLatestMessage,
     },
   });
 });
