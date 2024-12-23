@@ -26,6 +26,30 @@ const userSchema = new mongoose.Schema({
   //     default: 'user'
   // }
 
+  // password: {
+  //   type: String,
+  //   required: [true, 'Please enter a password'],
+  //   validate: {
+  //     validator: function (el) {
+  //       return validator.isStrongPassword(el, {
+  //         minLength: 8,
+  //         minLowercase: 0,
+  //         minUppercase: 0,
+  //         minNumbers: 0,
+  //         minSymbols: 0,
+  //         returnScore: false,
+  //         pointsPerUnique: 1,
+  //         pointsPerRepeat: 0.5,
+  //         pointsForContainingLower: 10,
+  //         pointsForContainingUpper: 10,
+  //         pointsForContainingNumber: 10,
+  //         pointsForContainingSymbol: 10,
+  //       });
+  //     },
+  //     message: 'Password must be at least 8 charachters.',
+  //   },
+  //   select: false,
+  // },
   password: {
     type: String,
     required: [true, 'Please enter a password'],

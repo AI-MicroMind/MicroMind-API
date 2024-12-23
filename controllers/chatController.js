@@ -57,7 +57,13 @@ exports.createChat = catchAsync(async (req, res, next) => {
 //TODO LATEST MESSAGE + Sort chat by updates +
 
 exports.getMyChats = catchAsync(async (req, res, next) => {
-  const chats = await Chat.find({ userId: req.user.id })
+  const { search } = req.query;
+  const filter = { userId: req.user.id };
+  if (search) {
+    // make sure the search query is the start of chat name, case-insensitive
+    filter.chatName = { $regex: `\\b${search}`, $options: 'i' };
+  }
+  const chats = await Chat.find(filter)
     .select('-__v -updatedAt')
     .sort('-createdAt');
 
