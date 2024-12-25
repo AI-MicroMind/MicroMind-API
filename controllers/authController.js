@@ -36,64 +36,64 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-// exports.signup = catchAsync(async (req, res, next) => {
-//   const newUser = await User.create({
-//     fullName: req.body.fullName,
-//     email: req.body.email,
-//     password: req.body.password,
-//     confirmPassword: req.body.confirmPassword,
-//   });
-// createSendToken(newUser, 201, res);
-// });
-
 exports.signup = catchAsync(async (req, res, next) => {
-  // const { fullName, email, password, confirmPassword } = req.body;
-  // const newUser = await User.create({
-  //   fullName,
-  //   email,
-  //   password,
-  //   confirmPassword,
-  // });
   const newUser = await User.create({
     fullName: req.body.fullName,
     email: req.body.email,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
   });
-
-  console.log(newUser);
-
-  // Create verification token
-  const verificationToken = newUser.createVerificationToken();
-  await newUser.save({ validateBeforeSave: false });
-
-  // send email with verification token
-  const verificationUrl = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/users/verify-email/${verificationToken}`;
-
-  const message = `Verify your email by clicking the following link: ${verificationUrl}`;
-
-  try {
-    await SendEmail({
-      email: newUser.email,
-      subject: 'AI MicroMind Email Verification',
-      message,
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Token sent to email',
-    });
-  } catch (err) {
-    newUser.verificationToken = undefined;
-    await newUser.save({ validateBeforeSave: false });
-    console.log(err);
-    return next(
-      new AppError('There is an error sending the email. Try again later.', 500)
-    );
-  }
+  createSendToken(newUser, 201, res);
 });
+
+// exports.signup = catchAsync(async (req, res, next) => {
+// const { fullName, email, password, confirmPassword } = req.body;
+// const newUser = await User.create({
+//   fullName,
+//   email,
+//   password,
+//   confirmPassword,
+// });
+//   const newUser = await User.create({
+//     fullName: req.body.fullName,
+//     email: req.body.email,
+//     password: req.body.password,
+//     confirmPassword: req.body.confirmPassword,
+//   });
+
+//   console.log(newUser);
+
+//   // Create verification token
+//   const verificationToken = newUser.createVerificationToken();
+//   await newUser.save({ validateBeforeSave: false });
+
+//   // send email with verification token
+//   const verificationUrl = `${req.protocol}://${req.get(
+//     'host'
+//   )}/api/v1/users/verify-email/${verificationToken}`;
+
+//   const message = `Verify your email by clicking the following link: ${verificationUrl}`;
+
+//   try {
+//     await SendEmail({
+//       email: newUser.email,
+//       subject: 'AI MicroMind Email Verification',
+//       message,
+//     });
+
+//     res.status(200).json({
+//       status: 'success',
+//       message: 'Token sent to email',
+//     });
+//   } catch (err) {
+//     newUser.verificationToken = undefined;
+//     await newUser.save({ validateBeforeSave: false });
+//     console.log(err);
+//     return next(
+//       new AppError('There is an error sending the email. Try again later.', 500)
+//     );
+//   }
+// });
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
   const hashedToken = crypto
@@ -113,8 +113,6 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   // Send token after email verification
   createSendToken(user, 200, res);
 });
-
-// exports.sendVerificationEmail;
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
