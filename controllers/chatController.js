@@ -35,13 +35,13 @@ exports.resizeChatPhoto = catchAsync(async (req, res, next) => {
 });
 
 exports.createChat = catchAsync(async (req, res, next) => {
-  const { chatUrl, chatName, chatPhoto } = req.body;
+  const { chatUrl, chatName } = req.body;
 
   const chat = await Chat.create({
     userId: req.user.id,
     chatUrl,
     chatName,
-    chatPhoto,
+    chatPhoto: req.file ? req.file.filename : undefined,
   });
 
   // if(!chat) return next(new AppError('Failed to create chat. Try again'))
