@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema({
       validator: function (el) {
         return el === this.password;
       },
-      message: 'Passwords are not the same',
+      message: 'Password and Confirm Password do not match.',
     },
   },
   isVerified: {
@@ -73,8 +73,8 @@ const userSchema = new mongoose.Schema({
   verificationToken: String,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  changedPasswordAt: Date,
 
-  // changedPasswordAt: Date,
   //   active: {
   //     type: Boolean,
   //     default: true,
@@ -94,6 +94,12 @@ userSchema.pre('save', async function (next) {
 });
 
 // Adding password changing time
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+  this.changedPasswordAt = Date.now() - 1000;
+  next();
+});
+
 userSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
   this.changedPasswordAt = Date.now() - 1000;
@@ -130,9 +136,17 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-//TODO password Changed After
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.changedPasswordAt) {
+    const changedTimeStamp = this.changedPasswordAt.getTime();
 
-// userSchema.methods.changedPasswordAfter= function(JWTTimestamp){}
+    // Means password has changed
+    return JWTTimestamp < changedTimeStamp;
+  }
+
+  // Means password has not changed
+  return false;
+};
 
 const User = mongoose.model('User', userSchema);
 

@@ -187,7 +187,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetExpires: { $gt: Date.now() },
   });
   // If token is not expired, or the user doesn't exists, reset your password
-  if (!user) return next(new AppError('Token is invalid or expired.'));
+  if (!user) return next(new AppError('Token is invalid or expired.', 401));
 
   user.password = req.body.password;
   user.confirmPassword = req.body.confirmPassword;
@@ -220,6 +220,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   // Verify token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
+  console.log({ decoded });
+
   // console.log(decoded);
 
   // check if the user still available
@@ -231,7 +233,30 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
 
   //? Check if user changed password after token was issued
+  if (currentUser.changedPasswordAfter(decoded.iat))
+    return next(
+      new AppError('Password was changed recently. Please login again.', 401)
+    );
 
   req.user = currentUser;
   next();
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1) Get the user with password from collection
+  const user = await User.findById(req.user.id).select('+password');
+
+  // 2) Check if POSTed password matches user's password
+  if (!(await user.correctPassword(req.body.currentPassword, user.password)))
+    return next(
+      new AppError('Current password is not correct. Please try again.', 401)
+    );
+
+  // 3) If so, update user password
+  user.password = req.body.newPassword;
+  user.confirmPassword = req.body.confirmPassword;
+  await user.save();
+
+  // log the user in
+  createSendToken(user, 200, res);
 });
