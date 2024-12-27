@@ -160,6 +160,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       console.log(`DONE UPLOADING`);
     }
   }
+  console.log(uploads);
   const [botResponse, userMessage] = await Promise.all([
     query(
       {
@@ -184,7 +185,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       // voice,
     }),
   ]);
-  console.log(botResponse);
+  console.log({ botResponse });
   if (botResponse.status === 'error')
     return next(new AppError('An error occured with your message. Try again.'));
 
