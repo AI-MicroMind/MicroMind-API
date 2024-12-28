@@ -10,7 +10,7 @@ const handleCastErrorDB = (err) => {
 const handleDuplicateErrorDB = (err) => {
   //   const value = err.message.match(/(["'])(?:(?=(\\?))\2.)*?\1/);
   //   console.log(value);
-  const message = `Duplicate field value: ${err.keyValue.name}. Please use another Value!`;
+  const message = `This email address is already used. Try to login or reset your password.`;
   return new AppError(message, 400);
 };
 

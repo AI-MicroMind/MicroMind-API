@@ -240,7 +240,7 @@ exports.starMessage = catchAsync(async (req, res, next) => {
 });
 
 exports.getChatStarredMessages = catchAsync(async (req, res, next) => {
-  const starredMessages = await Messages.find({ chat: req.params.chatId });
+  const starredMessages = await Message.find({ chat: req.params.chatId });
 
   // if(!starredMessages) return next(new AppError("Sorry! You don't have any starred messages for that chat."))
 

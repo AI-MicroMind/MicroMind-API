@@ -81,8 +81,9 @@ exports.getMyChats = catchAsync(async (req, res, next) => {
 
   // sort chat in descending order based on the latest message createdAt
   chatsWithLatestMessage.sort((a, b) => {
-    const aTime = a.latestMessage;
-    const bTime = b.latestMessage;
+    // Compare latest message, and if there is no message compare to creation date
+    const aTime = a.latestMessage ? a.latestMessage.createdAt : a.createdAt;
+    const bTime = b.latestMessage ? b.latestMessage.createdAt : b.createdAt;
     return bTime - aTime;
   });
 
