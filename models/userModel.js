@@ -26,36 +26,36 @@ const userSchema = new mongoose.Schema({
   //     default: 'user'
   // }
 
-  // password: {
-  //   type: String,
-  //   required: [true, 'Please enter a password'],
-  //   validate: {
-  //     validator: function (el) {
-  //       return validator.isStrongPassword(el, {
-  //         minLength: 8,
-  //         minLowercase: 0,
-  //         minUppercase: 0,
-  //         minNumbers: 0,
-  //         minSymbols: 0,
-  //         returnScore: false,
-  //         pointsPerUnique: 1,
-  //         pointsPerRepeat: 0.5,
-  //         pointsForContainingLower: 10,
-  //         pointsForContainingUpper: 10,
-  //         pointsForContainingNumber: 10,
-  //         pointsForContainingSymbol: 10,
-  //       });
-  //     },
-  //     message: 'Password must be at least 8 charachters.',
-  //   },
-  //   select: false,
-  // },
   password: {
     type: String,
     required: [true, 'Please enter a password'],
-    minlength: 8,
+    validate: {
+      validator: function (el) {
+        return validator.isStrongPassword(el, {
+          minLength: 8,
+          minLowercase: 0,
+          minUppercase: 0,
+          minNumbers: 0,
+          minSymbols: 0,
+          returnScore: true,
+          pointsPerUnique: 1,
+          pointsPerRepeat: 0.5,
+          pointsForContainingLower: 10,
+          pointsForContainingUpper: 10,
+          pointsForContainingNumber: 10,
+          pointsForContainingSymbol: 10,
+        });
+      },
+      message: 'Password must be at least 8 charachters.',
+    },
     select: false,
   },
+  // password: {
+  //   type: String,
+  //   required: [true, 'Please enter a password'],
+  //   minlength: 8,
+  //   select: false,
+  // },
   confirmPassword: {
     type: String,
     required: [true, 'Please confirm your password'],
@@ -138,10 +138,10 @@ userSchema.methods.createPasswordResetToken = function () {
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.changedPasswordAt) {
-    const changedTimeStamp = this.changedPasswordAt.getTime();
+    const JWTDate = new Date(JWTTimestamp * 1000);
 
     // Means password has changed
-    return JWTTimestamp < changedTimeStamp;
+    return JWTDate < this.changedPasswordAt;
   }
 
   // Means password has not changed
