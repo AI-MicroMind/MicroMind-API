@@ -33,7 +33,7 @@ const multerFilter = (req, file, cb) => {
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/chat-uploads/'); // Specify the directory to store uploaded files
+    cb(null, '/var/uploads/chat-uploads/'); // Specify the directory to store uploaded files
   },
   filename: (req, file, cb) => {
     cb(null, `file-${Date.now()}-${file.originalname}`); // Generate a unique filename
@@ -72,7 +72,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   // If there is uploaded files
   if (req.file) {
     console.log(req.file);
-    fileName = req.file.filename;
+    fileName = `/uploads/chat-uploads/${req.file.filename}`;
 
     // const filePath = path.join(req.get('host'), req.file.path);
     const filePath = `${req.protocol}://${req.get('host')}/chat-uploads/${
