@@ -22,7 +22,8 @@ const app = express();
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Serve /var/uploads for user-uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'var/uploads')));
+// app.use('/uploads', express.static(path.join('var/uploads')));
+app.use('/uploads', express.static('/var/uploads'));
 
 // Parsing incoming requests
 app.use(express.json({ limit: '10kb' }));
