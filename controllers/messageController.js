@@ -75,15 +75,15 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     fileName = `/uploads/chat-uploads/${req.file.filename}`;
 
     // const filePath = path.join(req.get('host'), req.file.path);
-    const filePath = `${req.protocol}://${req.get('host')}/chat-uploads/${
-      req.file.filename
-    }`;
+    // const filePath = `${req.protocol}://${req.get('host')}/chat-uploads/${
+    //   req.file.filename
+    // }`;
 
     // Handle images
     if (req.file.mimetype.startsWith('image')) {
       messageType = 'photo';
       uploads.push({
-        data: filePath, //base64 string or url
+        data: fileName, //base64 string or url
         type: 'url', // file | url
         name: req.file.filename,
         mime: 'image/jpeg',
