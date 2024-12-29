@@ -5,8 +5,8 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-// Alllow marketplace for only signed users
-// router.use(authController.protect);
+// Allow marketplace for only signed users
+router.use(authController.protect);
 
 router.get('/', marketplaceController.getMarketplace);
 router.get('/:itemId', marketplaceController.getMarketplaceItem);
