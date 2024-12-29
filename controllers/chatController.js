@@ -46,9 +46,7 @@ exports.createChat = catchAsync(async (req, res, next) => {
     userId: req.user.id,
     chatUrl: chatAPIUrl,
     chatName,
-    chatPhoto: req.file
-      ? `/var/uploads/img/chats/${req.file.filename}`
-      : undefined,
+    chatPhoto: req.file ? `/uploads/img/chats/${req.file.filename}` : undefined,
   });
 
   // if(!chat) return next(new AppError('Failed to create chat. Try again'))
