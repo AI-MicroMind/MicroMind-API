@@ -246,6 +246,14 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get the user with password from collection
   const user = await User.findById(req.user.id).select('+password');
 
+  if (req.body.currentPassword === req.body.newPassword)
+    return next(
+      new AppError(
+        'New password cannot be the same as the current password.',
+        400
+      )
+    );
+
   // 2) Check if POSTed password matches user's password
   if (!(await user.correctPassword(req.body.currentPassword, user.password)))
     return next(
