@@ -18,7 +18,11 @@ const marketplaceRouter = require('./routes/marketplaceRoutes');
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve public folder for static files like default images
+app.use('/static', express.static(path.join(__dirname, 'public')));
+
+// Serve /var/uploads for user-uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '/var/uploads')));
 
 // Parsing incoming requests
 app.use(express.json({ limit: '10kb' }));

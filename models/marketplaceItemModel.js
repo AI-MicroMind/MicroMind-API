@@ -11,7 +11,7 @@ const marketplaceItemSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: 'default.jpeg',
+    default: '/static/img/marketplace/default.jpg',
   },
   price: {
     type: Number,

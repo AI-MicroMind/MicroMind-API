@@ -29,7 +29,7 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/users/${req.file.filename}`);
+    .toFile(`/var/uploads/img/users/${req.file.filename}`);
   next();
 });
 
@@ -56,7 +56,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // Filter out fields that is not allowed to be updated by user
   const filteredBody = filterObj(req.body, 'fullName', 'email');
-  if (req.file) filteredBody.photo = req.file.filename;
+  if (req.file)
+    filteredBody.photo = `/var/uploads/img/users/${req.file.filename}`;
 
   // Update user and send response
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {

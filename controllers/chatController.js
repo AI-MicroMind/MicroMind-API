@@ -30,7 +30,7 @@ exports.resizeChatPhoto = catchAsync(async (req, res, next) => {
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/chats/${req.file.filename}`);
+    .toFile(`/var/uploads/img/chats/${req.file.filename}`);
   next();
 });
 
@@ -46,7 +46,9 @@ exports.createChat = catchAsync(async (req, res, next) => {
     userId: req.user.id,
     chatUrl: chatAPIUrl,
     chatName,
-    chatPhoto: req.file ? req.file.filename : undefined,
+    chatPhoto: req.file
+      ? `/var/uploads/img/chats/${req.file.filename}`
+      : undefined,
   });
 
   // if(!chat) return next(new AppError('Failed to create chat. Try again'))
