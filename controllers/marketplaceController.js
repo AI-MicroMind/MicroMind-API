@@ -17,7 +17,14 @@ exports.createMarketplaceItem = catchAsync(async (req, res, next) => {
 
 // Get all marketplace items
 exports.getMarketplace = catchAsync(async (req, res, next) => {
-  const items = await MarketplaceItem.find();
+  const { search } = req.query;
+  const filter = {};
+  if (search) {
+    // make sure the search query is the start of chat name, case-insensitive
+    filter.name = { $regex: `\\b${search}`, $options: 'i' };
+  }
+
+  const items = await MarketplaceItem.find(filter).sort('createdAt');
 
   res.status(200).json({
     status: 'success',
