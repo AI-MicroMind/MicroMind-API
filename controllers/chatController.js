@@ -37,9 +37,14 @@ exports.resizeChatPhoto = catchAsync(async (req, res, next) => {
 exports.createChat = catchAsync(async (req, res, next) => {
   const { chatUrl, chatName } = req.body;
 
+  // extracting the chat ID out of the page URL
+  const chatUrlId = chatUrl.split('/canvas/')[1];
+
+  const chatAPIUrl = `https://micromind-v2.onrender.com/api/v1/prediction/${chatUrlId}`;
+
   const chat = await Chat.create({
     userId: req.user.id,
-    chatUrl,
+    chatUrl: chatAPIUrl,
     chatName,
     chatPhoto: req.file ? req.file.filename : undefined,
   });
