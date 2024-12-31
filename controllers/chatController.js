@@ -38,9 +38,9 @@ exports.createChat = catchAsync(async (req, res, next) => {
   const { chatUrl, chatName } = req.body;
 
   // extracting the chat ID out of the page URL
-  const chatUrlId = chatUrl.split('/canvas/')[1];
+  const splitChatUrl = chatUrl.split('/canvas/');
 
-  const chatAPIUrl = `https://micromind-v2.onrender.com/api/v1/prediction/${chatUrlId}`;
+  const chatAPIUrl = `${splitChatUrl[0]}/api/v1/prediction/${splitChatUrl[1]}`;
 
   const chat = await Chat.create({
     userId: req.user.id,
