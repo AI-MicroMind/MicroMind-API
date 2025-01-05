@@ -4,16 +4,21 @@ const AppError = require('../utils/AppError');
 
 // Post  to tour robot
 exports.addTour = catchAsync(async (req, res, next) => {
-  const tourRobot = await TourRobot.findOne({ status: 'idle' }).select('-_id');
+  const tourRobot = await TourRobot.findOne();
 
   //   if (tourRobot.status === 'equipped')
   //     return next(new AppError('Sorry! The robot is currently busy.', 400));
 
-  if (!tourRobot)
-    return next(new AppError('Sorry! The robot is currently busy.', 400));
+  // if (tourRobot)
+  //   return next(new AppError('Sorry! The robot is currently busy.', 400));
 
   if (!req.body.session_id)
     return next('Please provide session ID to add tour.');
+
+  let message =
+    tourRobot.status === 'equipped'
+      ? 'Sorry, the robot is currently in another tour. Please wait.'
+      : 'Your tour begins now.';
 
   tourRobot.trigger = true;
   tourRobot.status = 'equipped';
@@ -24,6 +29,7 @@ exports.addTour = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     tourRobot,
+    message,
   });
 });
 
@@ -45,8 +51,9 @@ exports.getRobot = catchAsync(async (req, res, next) => {
 exports.idleRobot = catchAsync(async (req, res, next) => {
   const tourRobot = await TourRobot.findOneAndUpdate(
     {},
-    { status: 'idle' }
-  ).select('-_id');
+    { status: 'idle' },
+    { new: true }
+  );
 
   res.status(200).json({
     status: 'success',
