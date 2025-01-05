@@ -12,6 +12,8 @@ exports.addTour = catchAsync(async (req, res, next) => {
   // if (tourRobot)
   //   return next(new AppError('Sorry! The robot is currently busy.', 400));
 
+  console.log(req.body);
+  console.log({ tourRobot });
   if (!req.body.session_id)
     return next('Please provide session ID to add tour.');
 
