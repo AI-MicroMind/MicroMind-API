@@ -14,8 +14,8 @@ exports.addTour = catchAsync(async (req, res, next) => {
 
   console.log(req.body);
   console.log({ tourRobot });
-  if (!req.body.session_id)
-    return next('Please provide session ID to add tour.');
+  // if (!req.body.session_id)
+  //   return next('Please provide session ID to add tour.');
 
   let message =
     tourRobot.status === 'equipped'
@@ -24,7 +24,7 @@ exports.addTour = catchAsync(async (req, res, next) => {
 
   tourRobot.trigger = true;
   tourRobot.status = 'equipped';
-  tourRobot.session_id = req.body.session_id;
+  tourRobot.session_id = req.body.session_id || '123';
 
   await tourRobot.save();
 
