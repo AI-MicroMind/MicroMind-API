@@ -190,18 +190,18 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   if (botResponse.status === 'error')
     return next(new AppError('An error occured with your message. Try again.'));
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      botResponse,
-    },
-  });
-
   // Save bot response to database
-  Message.create({
+  const botMessage = await Message.create({
     chat: req.params.chatId,
     sender: 'bot',
     text: botResponse.text,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      botMessage,
+    },
   });
 });
 
