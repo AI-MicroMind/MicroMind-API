@@ -201,6 +201,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       botMessage,
+      userMessage,
     },
   });
 });
