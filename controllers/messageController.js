@@ -190,12 +190,23 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   if (botResponse.status === 'error')
     return next(new AppError('An error occured with your message. Try again.'));
 
-  // Save bot response to database
-  const botMessage = await Message.create({
-    chat: req.params.chatId,
-    sender: 'bot',
-    text: botResponse.text,
-  });
+  let botMessage;
+
+  if (botResponse.text.startswith('![]')) {
+    const photoUrl = botResponse.text.split('(')[1].split(')')[0];
+    botMessage = await Message.create({
+      chat: req.params.chatId,
+      sender: 'bot',
+      file: photoUrl,
+      type: 'photo',
+    });
+  } else {
+    botMessage = await Message.create({
+      chat: req.params.chatId,
+      sender: 'bot',
+      text: botResponse.text,
+    });
+  }
 
   res.status(200).json({
     status: 'success',
