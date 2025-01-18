@@ -192,7 +192,8 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   let botMessage;
 
-  if (botResponse.text.startswith('![]')) {
+  // handle if the bot generated a photo
+  if (botResponse.text.startsWith('![]')) {
     const photoUrl = botResponse.text.split('(')[1].split(')')[0];
     botMessage = await Message.create({
       chat: req.params.chatId,
