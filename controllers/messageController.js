@@ -192,8 +192,22 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   let botMessage;
 
-  // handle if the bot generated a photo
-  if (botResponse.text.startsWith('![]')) {
+  // handle generated flowcharts
+  if (botResponse.artifacts) {
+    const artifacteFile = botResponse.artifacts[0].split('::')[1];
+    const artifacteUrl = `https://micromind-v2.onrender.com/api/v1/get-upload-file?chatflowId=${
+      chatUrl.split('/prediction/')[1]
+    }&chatId=${req.params.chatId}&fileName=${artifacteFile}`;
+    botMessage = await Message.create({
+      chat: req.params.chatId,
+      sender: 'bot',
+      file: artifacteUrl,
+      type: 'photo',
+    });
+  }
+
+  // handle generated photos
+  else if (botResponse.text.startsWith('![]')) {
     const photoUrl = botResponse.text.split('(')[1].split(')')[0];
     botMessage = await Message.create({
       chat: req.params.chatId,
