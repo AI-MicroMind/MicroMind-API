@@ -194,7 +194,8 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   // handle generated flowcharts
   if (botResponse.artifacts) {
-    const artifacteFile = botResponse.artifacts[0].split('::')[1];
+    // Extracting the artifact file name from the respons
+    const artifacteFile = botResponse.artifacts[0].data.split('::')[1];
     const artifacteUrl = `https://micromind-v2.onrender.com/api/v1/get-upload-file?chatflowId=${
       chatUrl.split('/prediction/')[1]
     }&chatId=${req.params.chatId}&fileName=${artifacteFile}`;
