@@ -84,6 +84,16 @@ exports.getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-//TODO Delete ME
+//TODO DELETE CHATS AND MESSAGES RELATED TO THAT USER
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndDelete(req.user.id);
+
+  if (!user) return next(new AppError('User not found', 404));
+
+  res.status(200).json({
+    status: 'success',
+    message: 'User is deleted successfully',
+  });
+});
 
 //TODO Admin controllers
