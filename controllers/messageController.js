@@ -281,6 +281,18 @@ exports.getChatStarredMessages = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.deleteMessage = catchAsync(async (req, res, next) => {
+  const message = await Message.findByIdAndDelete(req.params.messageId);
+
+  if (!message)
+    return next(new AppError('There is no message with that ID', 400));
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Message deleted successfully',
+  });
+});
+
 // exports.getStarredMessages = catchAsync(async(req.res.next) => {
 
 // })
