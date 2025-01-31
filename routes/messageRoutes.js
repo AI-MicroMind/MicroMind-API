@@ -11,4 +11,6 @@ router.post(
 );
 router.get('/', messageController.loadChatMessages);
 
+router.delete('/:messageId', messageController.deleteMessage);
+
 module.exports = router;
