@@ -21,6 +21,8 @@ router
   .get(chatController.getChat)
   .delete(chatController.deleteChat);
 
+router.post('/:chatId/clear', chatController.clearChatHistory);
+
 router.use('/:chatId/messages', messageRouter);
 
 // router.get('/:chatId', chatController.getChatMessages)
