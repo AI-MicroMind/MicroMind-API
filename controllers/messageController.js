@@ -234,6 +234,8 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 });
 
 exports.loadChatMessages = catchAsync(async (req, res, next) => {
+  if (!req.params.chatId)
+    return next(new AppError('Please provide a chat ID', 400));
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
 
@@ -255,6 +257,9 @@ exports.loadChatMessages = catchAsync(async (req, res, next) => {
 exports.starMessage = catchAsync(async (req, res, next) => {
   const message = await Message.findById(req.params.messageId);
 
+  if (!message)
+    return next(new AppError('There is no message with that ID', 400));
+
   // Toggle star on that message
   message.starred = !message.starred;
 
@@ -269,7 +274,10 @@ exports.starMessage = catchAsync(async (req, res, next) => {
 });
 
 exports.getChatStarredMessages = catchAsync(async (req, res, next) => {
-  const starredMessages = await Message.find({ chat: req.params.chatId });
+  const starredMessages = await Message.find({
+    chat: req.params.chatId,
+    starred: true,
+  });
 
   // if(!starredMessages) return next(new AppError("Sorry! You don't have any starred messages for that chat."))
 
@@ -292,7 +300,3 @@ exports.deleteMessage = catchAsync(async (req, res, next) => {
     message: 'Message deleted successfully',
   });
 });
-
-// exports.getStarredMessages = catchAsync(async(req.res.next) => {
-
-// })

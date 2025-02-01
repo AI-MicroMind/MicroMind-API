@@ -11,6 +11,9 @@ router.post(
 );
 router.get('/', messageController.loadChatMessages);
 
+// router.get('/starred', messageController.getChatStarredMessages);
+
 router.delete('/:messageId', messageController.deleteMessage);
+router.patch('/:messageId/star', messageController.starMessage);
 
 module.exports = router;
