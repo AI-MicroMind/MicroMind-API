@@ -1,5 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const mongoose = require('mongoose');
 
 const Chat = require('../models/chatModel');
 const Message = require('../models/messageModel');
@@ -133,4 +134,46 @@ exports.getChat = catchAsync(async (req, res, next) => {
       chat,
     },
   });
+});
+
+exports.clearChatHistory = catchAsync(async (req, res, next) => {
+  // Start a session to ensure that the chat is deleted only if all messages are deleted
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const chat = await Chat.findById(req.params.chatId).session(session);
+
+    if (!chat) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(new AppError('There is no chat with that ID.', 404));
+    }
+
+    // clone the chat to the new Chat
+    const newChat = await Chat.create(
+      [{ ...chat.toObject(), _id: undefined }],
+      { session }
+    );
+
+    // delete the old chat
+    await Chat.findByIdAndDelete(chat._id).session(session);
+
+    // delete all messages related to the old chat
+    await Message.deleteMany({ chat: chat._id }).session(session);
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Chat cleared successfully',
+      newChat: newChat[0],
+    });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    return next(new AppError('Failed to clear chat. Try again.', 500));
+  }
 });

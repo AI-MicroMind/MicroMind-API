@@ -39,7 +39,7 @@ const createSendToken = (user, statusCode, res) => {
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     fullName: req.body.fullName,
-    email: req.body.email,
+    email: req.body.email.toLowerCase(),
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
   });
@@ -120,7 +120,9 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!email || !password)
     return next(new AppError('Please enter your email and password', 400));
 
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
+    '+password'
+  );
 
   if (!user || !(await user.correctPassword(password, user.password)))
     return next(new AppError('Invalid email or password. Try again.', 400));
