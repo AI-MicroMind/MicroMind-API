@@ -222,7 +222,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // Verify token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-  console.log({ decoded });
+  // console.log({ decoded });
 
   // console.log(decoded);
 
