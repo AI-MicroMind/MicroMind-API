@@ -196,9 +196,8 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   if (botResponse.artifacts) {
     // Extracting the artifact file name from the respons
     const artifacteFile = botResponse.artifacts[0].data.split('::')[1];
-    const artifacteUrl = `https://micromind-v2.onrender.com/api/v1/get-upload-file?chatflowId=${
-      chatUrl.split('/prediction/')[1]
-    }&chatId=${req.params.chatId}&fileName=${artifacteFile}`;
+    const chatBaseChunks = chatUrl.split('/prediction/');
+    const artifacteUrl = `${chatBaseChunks[0]}/get-upload-file?chatflowId=${chatBaseChunks[1]}&chatId=${req.params.chatId}&fileName=${artifacteFile}`;
     botMessage = await Message.create({
       chat: req.params.chatId,
       sender: 'bot',
