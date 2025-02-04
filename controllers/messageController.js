@@ -186,11 +186,30 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       // voice,
     }),
   ]);
+
+  let botMessage;
+
+  // IF THE RESPONSE FAILED
+  if (!botResponse || botResponse.success === false) {
+    console.log('ERROR PROCESSING MESSAGE');
+    botMessage = await Message.create({
+      chat: req.params.chatId,
+      text: 'An error occured with your message. Try again.',
+      sender: 'bot',
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        botMessage,
+        userMessage,
+      },
+    });
+  }
+
   console.log({ botResponse });
   if (botResponse.status === 'error')
     return next(new AppError('An error occured with your message. Try again.'));
-
-  let botMessage;
 
   // handle generated flowcharts
   if (botResponse.artifacts) {
@@ -208,7 +227,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   }
 
   // handle generated photos
-  else if (botResponse.text.startsWith('![]')) {
+  else if (botResponse.text?.startsWith('![]')) {
     const photoUrl = botResponse.text.split('(')[1].split(')')[0];
     botMessage = await Message.create({
       chat: req.params.chatId,
@@ -224,11 +243,17 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     });
   }
 
+  console.log({ botMessage });
+  console.log(botMessage.text);
+
+  // res.status(200).json({
+  //   status: 'FUCK OFF',
+  // });
   res.status(200).json({
     status: 'success',
     data: {
       botMessage,
-      userMessage,
+      // userMessage,
     },
   });
 });
