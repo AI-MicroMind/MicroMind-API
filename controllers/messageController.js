@@ -202,6 +202,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       chat: req.params.chatId,
       sender: 'bot',
       file: artifacteUrl,
+      text: botResponse.text,
       type: 'photo',
     });
   }
