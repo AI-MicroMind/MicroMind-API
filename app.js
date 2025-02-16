@@ -52,6 +52,8 @@ const limiter = rateLimit({
   message: 'Too many requests, Try again later',
 });
 
+app.set('trust proxy', 1); // Enable trust for first proxy (like Render's reverse proxy)
+
 app.use('/api', limiter);
 
 app.use('/api/v1/users', userRouter);
