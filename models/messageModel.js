@@ -18,18 +18,6 @@ const messageSchema = new mongoose.Schema(
       // For message content
       type: String,
     },
-    // photo: {
-    //   // For photos
-    //   type: String,
-    // },
-    // voice: {
-    //   // For voice messages
-    //   type: String,
-    // },
-    // file: {
-    //   // For files
-    //   type: String,
-    // },
     file: {
       type: String,
       fileType: {
