@@ -191,6 +191,8 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   // IF THE RESPONSE FAILED
   if (!botResponse || botResponse.success === false) {
+    console.log({ botResponse });
+
     console.log('ERROR PROCESSING MESSAGE');
     botMessage = await Message.create({
       chat: req.params.chatId,
