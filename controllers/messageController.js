@@ -213,6 +213,11 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   if (botResponse.status === 'error')
     return next(new AppError('An error occured with your message. Try again.'));
 
+  // Remove imgur links from the response
+  botResponse.text = botResponse.text
+    .replace(/!\[.*?\]\(https?:\/\/i\.imgur\.com\/[^\)]+\)/g, '')
+    .trim();
+
   // handle generated flowcharts
   if (botResponse.artifacts) {
     // Extracting the artifact file name from the respons
