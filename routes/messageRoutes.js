@@ -10,6 +10,7 @@ router.post(
   messageController.sendMessage
 );
 router.get('/', messageController.loadChatMessages);
+router.get('/:messageId/star', messageController.loadChatFromStarredMessage);
 
 // router.get('/starred', messageController.getChatStarredMessages);
 

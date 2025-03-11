@@ -256,31 +256,12 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   // res.status(200).json({
   //   status: 'FUCK OFF',
   // });
+
   res.status(200).json({
     status: 'success',
     data: {
       botMessage,
       userMessage,
-    },
-  });
-});
-
-exports.loadChatMessages = catchAsync(async (req, res, next) => {
-  if (!req.params.chatId)
-    return next(new AppError('Please provide a chat ID', 400));
-  const { page = 1, limit = 10 } = req.query;
-  const skip = (page - 1) * limit;
-
-  const messages = await Message.find({ chat: req.params.chatId })
-    .sort('-createdAt')
-    .skip(skip)
-    .limit(limit);
-
-  res.status(200).json({
-    status: 'success',
-    results: messages.length,
-    data: {
-      messages,
     },
   });
 });
@@ -317,6 +298,72 @@ exports.getChatStarredMessages = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       starredMessages,
+    },
+  });
+});
+
+exports.loadChatMessages = catchAsync(async (req, res, next) => {
+  if (!req.params.chatId)
+    return next(new AppError('Please provide a chat ID', 400));
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const messages = await Message.find({ chat: req.params.chatId })
+    .sort('-createdAt')
+    .skip(skip)
+    .limit(limit);
+
+  res.status(200).json({
+    status: 'success',
+    results: messages.length,
+    data: {
+      messages,
+    },
+  });
+});
+
+exports.loadChatFromStarredMessage = catchAsync(async (req, res, next) => {
+  const { page = 1, limit = 20, direction } = req.query;
+  const skip = (page - 1) * limit;
+
+  const starredMessage = await Message.findOne({
+    _id: req.params.messageId,
+    chat: req.params.chatId,
+    starred: true,
+  });
+
+  if (!starredMessage)
+    return next(new AppError('There is no message with that ID', 400));
+
+  let messages = [];
+
+  if (direction === 'before') {
+    messages = await Message.find({
+      chat: req.params.chatId,
+      createdAt: { $lt: starredMessage.createdAt },
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+  } else if (direction === 'after') {
+    messages = await Message.find({
+      chat: req.params.chatId,
+      createdAt: { $gte: starredMessage.createdAt },
+    })
+      .sort({ createdAt: 1 })
+      .skip(skip)
+      .limit(limit);
+
+    messages.reverse();
+  } else {
+    return next(new AppError('Please provide a direction', 400));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    results: messages.length,
+    data: {
+      messages,
     },
   });
 });
