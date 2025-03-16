@@ -177,3 +177,54 @@ exports.clearChatHistory = catchAsync(async (req, res, next) => {
     return next(new AppError('Failed to clear chat. Try again.', 500));
   }
 });
+
+exports.setDefaultChat = catchAsync(async (req, res, next) => {
+  // remove default from all chats
+  const userDefaultChat = await Chat.findOneAndUpdate(
+    { userId: req.user.id, default: true },
+    { default: false },
+    { new: true }
+  );
+
+  // if (userDefaultChat.length > 0) {
+  //   // set all chats to default false
+  //   await Chat.updateMany({ userId: req.user.id }, { default: false });
+  // }
+
+  const newDefaultChat = await Chat.findOneAndUpdate(
+    {
+      _id: req.params.chatId,
+      userId: req.user.id,
+    },
+    { default: true },
+    { new: true }
+  );
+
+  if (!newDefaultChat)
+    return next(new AppError('There is no chat with that ID.', 404));
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      newDefaultChat,
+    },
+  });
+});
+
+exports.getDefaultChat = catchAsync(async (req, res, next) => {
+  const defaultChat = await Chat.findOne({
+    userId: req.user.id,
+    default: true,
+  });
+
+  //? if there is no default chat, return error?
+  // if (!defaultChat)
+  //   return next(new AppError('You do not have a default chat.', 404));
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      defaultChat,
+    },
+  });
+});
