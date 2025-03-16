@@ -17,4 +17,6 @@ router.get('/:messageId/star', messageController.loadChatFromStarredMessage);
 router.delete('/:messageId', messageController.deleteMessage);
 router.patch('/:messageId/star', messageController.starMessage);
 
+router.post('/export-to-docx', messageController.exportToDocx);
+
 module.exports = router;

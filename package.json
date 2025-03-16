@@ -21,6 +21,7 @@
     "flowise-sdk": "^1.0.9",
     "helmet": "^8.0.0",
     "hpp": "^0.2.3",
+    "html-to-docx": "^1.8.0",
     "jsonwebtoken": "^9.0.2",
     "mammoth": "^1.8.0",
     "mongoose": "^8.8.3",
