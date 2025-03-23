@@ -36,16 +36,54 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
+//? Signup using invitation code
 exports.signup = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
-    fullName: req.body.fullName,
-    email: req.body.email.toLowerCase(),
-    password: req.body.password,
-    confirmPassword: req.body.confirmPassword,
+  const { fullName, email, password, confirmPassword, invitationCode } =
+    req.body;
+
+  if (!invitationCode)
+    return next(new AppError('Please enter an invitation code', 400));
+
+  // Check if the invitation code is valid
+  const existingUser = await User.findOne({
+    invitationCodes: { $elemMatch: { code: invitationCode, used: false } },
   });
+  // const existingUser = await User.findOne({
+  //   'invitationCodes.code': invitationCode,
+  //   'invitationCodes.used': false,
+  // });
+
+  if (!existingUser)
+    return next(new AppError('Sorry! This code is invalid.', 400));
+
+  const newUser = await User.create({
+    fullName,
+    email,
+    password,
+    confirmPassword,
+  });
+
+  // Mark the invitation code as used
+  await User.updateOne(
+    { 'invitationCodes.code': invitationCode },
+    { 'invitationCodes.$.used': true }
+  );
+
   createSendToken(newUser, 201, res);
 });
 
+//? Normal Signup
+// exports.signup = catchAsync(async (req, res, next) => {
+//   const newUser = await User.create({
+//     fullName: req.body.fullName,
+//     email: req.body.email.toLowerCase(),
+//     password: req.body.password,
+//     confirmPassword: req.body.confirmPassword,
+//   });
+//   createSendToken(newUser, 201, res);
+// });
+
+//? SignUp with email verification
 // exports.signup = catchAsync(async (req, res, next) => {
 // const { fullName, email, password, confirmPassword } = req.body;
 // const newUser = await User.create({
@@ -157,7 +195,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const message = `Forgot your password? You can reset your password using the next link: ${resetUrl}`;
   try {
     await SendEmail({
-      email: user.email,
+      // email: user.email,
+      email: 'yahia.elfaramawy744@gmail.com',
       subject: 'AI MicroMind Reset Password',
       message,
     });
@@ -169,7 +208,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   } catch (err) {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-    await newUser.save({ validateBeforeSave: false });
+    // await newUser.save({ validateBeforeSave: false });
     console.log(err);
     return next(
       new AppError('There is an error sending the email. Try again later.', 500)

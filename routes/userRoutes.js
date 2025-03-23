@@ -29,4 +29,6 @@ router.patch('/update-password', authController.updatePassword);
 
 router.delete('/delete-me', userController.getMe, userController.deleteUser);
 
+router.post('/invitation-codes', userController.generateInvitationCode);
+
 module.exports = router;

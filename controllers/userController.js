@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const sharp = require('sharp');
 
@@ -97,3 +98,34 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 });
 
 //TODO Admin controllers
+
+exports.generateInvitationCode = catchAsync(async (req, res, next) => {
+  console.log(req.user);
+
+  const user = await User.findById(req.user.id);
+
+  if (user.invitationCodes.length > 0) {
+    return next(
+      new AppError(
+        'You have reached the maximum number of invitation codes',
+        400
+      )
+    );
+  }
+  const newCodes = Array.from({ length: 3 }, () => ({
+    code: uuidv4(),
+    used: false,
+  }));
+
+  console.log({ newCodes });
+  user.invitationCodes.push(...newCodes);
+  await user.save({ validateBeforeSave: false });
+
+  console.log(user.invitationCodes);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      codes: newCodes,
+    },
+  });
+});

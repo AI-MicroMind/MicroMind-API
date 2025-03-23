@@ -69,6 +69,16 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: Date,
   changedPasswordAt: Date,
 
+  invitationCodes: {
+    type: [
+      {
+        code: String,
+        used: { type: Boolean, default: false },
+      },
+    ],
+    default: [],
+  },
+
   //   active: {
   //     type: Boolean,
   //     default: true,
