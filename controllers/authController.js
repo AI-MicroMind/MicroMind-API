@@ -196,7 +196,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   try {
     await SendEmail({
       // email: user.email,
-      email: 'yahia.elfaramawy744@gmail.com',
+      email: user.email,
       subject: 'AI MicroMind Reset Password',
       message,
     });
