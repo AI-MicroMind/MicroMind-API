@@ -113,7 +113,7 @@ exports.generateInvitationCode = catchAsync(async (req, res, next) => {
     );
   }
   const newCodes = Array.from({ length: 3 }, () => ({
-    code: uuidv4(),
+    code: uuidv4().split('-')[0],
     used: false,
   }));
 
