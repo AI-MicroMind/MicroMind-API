@@ -1,5 +1,6 @@
 const fs = require('fs');
 const multer = require('multer');
+const TurndownService = require('turndown');
 const HTMLtoDOCX = require('html-to-docx');
 
 // File Loaders
@@ -384,10 +385,14 @@ exports.deleteMessage = catchAsync(async (req, res, next) => {
 exports.exportToDocx = catchAsync(async (req, res, next) => {
   // const message = await Message.findById(req.params.messageId);
 
-  // await HTMLtoDOCX('<h1>Hello World</h1>', `${date.now()}.docx`);
+  // if (!message)
+  //   return next(new AppError('There is no message with that ID', 400));
+
+  // console.log(message);
 
   // Convert HTML to DOCX
-  const docxBuffer = await HTMLtoDOCX(req.body.htmlContent);
+  // const docxBuffer = await HTMLtoDOCX(req.body.htmlContent);
+  const docxBuffer = await HTMLtoDOCX(req.body);
 
   // Set headers for file download
   res.setHeader(
@@ -401,3 +406,71 @@ exports.exportToDocx = catchAsync(async (req, res, next) => {
 
   res.send(docxBuffer);
 });
+
+// exports.exportToDocx2 = catchAsync(async (req, res, next) => {
+
+//   // Set headers for file download
+//   res.setHeader(
+//     'Content-Disposition',
+//     `attachment; filename="AI-MicroMind-${Date.now()}.docx"`
+//   );
+//   res.setHeader(
+//     'Content-Type',
+//     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+//   );
+
+//   res.send(docxBuffer);
+// })
+
+// const htmlContent =
+//   '<p>Here are the top sales representatives based on their achievement percentages:</p>';
+//   const htmlContent = `
+//   <p>Here are the top sales representatives based on their achievement percentages:</p>
+// <table>
+// <thead>
+// <tr>
+// <th><strong>Sales Representative</strong></th>
+// <th><strong>Sales Rep Number</strong></th>
+// <th><strong>Total Sales</strong></th>
+// <th><strong>Total Target</strong></th>
+// <th><strong>Achievement Percentage</strong></th>
+// </tr>
+// </thead>
+// <tbody><tr>
+// <td>عمر طارق ناصر</td>
+// <td>513</td>
+// <td>303,530.49</td>
+// <td>100,656.56</td>
+// <td>301.55%</td>
+// </tr>
+// <tr>
+// <td>هيثم عبد السادة</td>
+// <td>514</td>
+// <td>225,253.47</td>
+// <td>113,031.76</td>
+// <td>199.28%</td>
+// </tr>
+// <tr>
+// <td>طارق حسين محمد</td>
+// <td>704</td>
+// <td>169,197.27</td>
+// <td>91,564.53</td>
+// <td>184.78%</td>
+// </tr>
+// <tr>
+// <td>مالك خالد عباس</td>
+// <td>222</td>
+// <td>112,362.35</td>
+// <td>62,872.05</td>
+// <td>178.72%</td>
+// </tr>
+// <tr>
+// <td>أحمد أيوب محمد-FR</td>
+// <td>561</td>
+// <td>111,318.22</td>
+// <td>63,471.70</td>
+// <td>175.38%</td>
+// </tr>
+// </tbody></table>
+// <p>These representatives have demonstrated exceptional performance by significantly surpassing their sales targets.</p>
+// `;
