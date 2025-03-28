@@ -10,6 +10,8 @@ const router = express.Router();
 // Prevent guests from creating chats
 router.use(authController.protect);
 
+router.get('/default', chatController.getDefaultChat);
+
 router.post(
   '/',
   chatController.uploadChatPhoto,
@@ -17,6 +19,7 @@ router.post(
   chatController.createChat
 );
 router.get('/my-chats', chatController.getMyChats);
+
 router
   .route('/:chatId')
   .get(chatController.getChat)
@@ -27,7 +30,6 @@ router.post('/:chatId/clear', chatController.clearChatHistory);
 router.get('/:chatId/starred', messageController.getChatStarredMessages);
 
 router.post('/:chatId/default', chatController.setDefaultChat);
-router.get('/default', chatController.getDefaultChat);
 
 router.use('/:chatId/messages', messageRouter);
 
