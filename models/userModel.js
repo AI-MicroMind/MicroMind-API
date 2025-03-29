@@ -21,11 +21,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '/static/img/users/default.jpg',
   },
-  // role: {
-  //     type: String,
-  //     enum: ['user'],
-  //     default: 'user'
-  // }
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+
+  //TODO phone number
+  phone: {
+    type: String,
+    required: [true, 'Please enter your phone number'],
+    validate: {
+      validator: function (value) {
+        return validator.isMobilePhone(value, 'any', { strictMode: false });
+      },
+      // message: 'Please enter a valid phone number with country code.',
+      message: 'Please enter a valid phone number including your country code.',
+    },
+  },
 
   password: {
     type: String,
@@ -68,6 +81,16 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetExpires: Date,
   changedPasswordAt: Date,
+
+  invitationCodes: {
+    type: [
+      {
+        code: String,
+        used: { type: Boolean, default: false },
+      },
+    ],
+    default: [],
+  },
 
   //   active: {
   //     type: Boolean,

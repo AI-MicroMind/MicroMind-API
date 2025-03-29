@@ -9,6 +9,8 @@ router.post('/signup', authController.signup);
 // router.get('/verify-email/:token', authController.verifyEmail);
 
 router.post('/login', authController.login);
+router.post('/admin-login', authController.adminLogin);
+
 router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-Password/:token', authController.resetPassword);
 router.get('/logout', authController.logout);
@@ -28,5 +30,7 @@ router.patch(
 router.patch('/update-password', authController.updatePassword);
 
 router.delete('/delete-me', userController.getMe, userController.deleteUser);
+
+router.post('/invitation-codes', userController.generateInvitationCode);
 
 module.exports = router;

@@ -17,6 +17,12 @@ router.get('/:messageId/star', messageController.loadChatFromStarredMessage);
 router.delete('/:messageId', messageController.deleteMessage);
 router.patch('/:messageId/star', messageController.starMessage);
 
-router.post('/export-to-docx', messageController.exportToDocx);
+router.post(
+  '/:messageId/export-to-docx',
+  // express.text({ type: '*/*' }), // to parse the raw text
+  // express.raw({ type: 'text/html' }),
+  express.text({ type: 'text/html' }),
+  messageController.exportToDocx
+);
 
 module.exports = router;
