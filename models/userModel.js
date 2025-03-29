@@ -35,7 +35,8 @@ const userSchema = new mongoose.Schema({
       validator: function (value) {
         return validator.isMobilePhone(value, 'any', { strictMode: false });
       },
-      message: 'Please enter a valid phone number',
+      // message: 'Please enter a valid phone number with country code.',
+      message: 'Please enter a valid phone number including your country code.',
     },
   },
 
