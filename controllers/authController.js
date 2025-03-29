@@ -1,11 +1,14 @@
 const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 const SendEmail = require('../utils/email');
 const User = require('../models/userModel');
+const Chat = require('../models/chatModel');
+const Message = require('../models/messageModel');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -38,38 +41,102 @@ const createSendToken = (user, statusCode, res) => {
 
 //? Signup using invitation code
 exports.signup = catchAsync(async (req, res, next) => {
-  const { fullName, email, password, confirmPassword, invitationCode } =
-    req.body;
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  if (!invitationCode)
-    return next(new AppError('Please enter an invitation code', 400));
+  try {
+    const {
+      fullName,
+      email,
+      password,
+      confirmPassword,
+      invitationCode,
+      phone,
+    } = req.body;
 
-  // Check if the invitation code is valid
-  const existingUser = await User.findOne({
-    invitationCodes: { $elemMatch: { code: invitationCode, used: false } },
-  });
-  // const existingUser = await User.findOne({
-  //   'invitationCodes.code': invitationCode,
-  //   'invitationCodes.used': false,
-  // });
+    if (!invitationCode) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(new AppError('Please enter an invitation code', 400));
+    }
+    // Check if the invitation code is valid
+    const existingUser = await User.findOne({
+      invitationCodes: { $elemMatch: { code: invitationCode, used: false } },
+    }).session(session);
+    // const existingUser = await User.findOne({
+    //   'invitationCodes.code': invitationCode,
+    //   'invitationCodes.used': false,
+    // });
 
-  if (!existingUser)
-    return next(new AppError('Sorry! This code is invalid.', 400));
+    if (!existingUser) {
+      await session.abortTransaction();
+      session.endSession();
+      return next(new AppError('Sorry! This code is invalid.', 400));
+    }
 
-  const newUser = await User.create({
-    fullName,
-    email,
-    password,
-    confirmPassword,
-  });
+    const newUser = (
+      await User.create(
+        [
+          {
+            fullName,
+            email,
+            password,
+            confirmPassword,
+            phone,
+          },
+        ],
+        { session }
+      )
+    )[0];
 
-  // Mark the invitation code as used
-  await User.updateOne(
-    { 'invitationCodes.code': invitationCode },
-    { 'invitationCodes.$.used': true }
-  );
+    // Mark the invitation code as used
+    await User.updateOne(
+      { 'invitationCodes.code': invitationCode },
+      { 'invitationCodes.$.used': true },
+      { session }
+    );
 
-  createSendToken(newUser, 201, res);
+    // Create a default chat linked to the new user
+    const chat = (
+      await Chat.create(
+        [
+          {
+            chatName: 'AI MicroMind',
+            userId: newUser._id,
+            chatUrl:
+              'https://aimicromind-platform-2025.onrender.com/api/v1/prediction/36ba2616-8ce5-4d8a-bcf7-d9f8273b4a7b',
+            chatPhoto: '/static/img/chats/default.jpg',
+          },
+        ],
+        { session }
+      )
+    )[0];
+
+    // Create a hello message
+    await Message.create(
+      [
+        {
+          chat: chat._id,
+          sender: 'bot',
+          text: `Hello ${newUser.fullName.split(' ')[0]}! 👋
+          Welcome to **AI MicroMind**! How can i help you today? 🤩`,
+          // I am AI MicroMind, your personal assistant. I am here to help you with your tasks and provide you with the information you need. You can ask me anything, and I will do my best to assist you.😅`,
+        },
+      ],
+      { session }
+    );
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    createSendToken(newUser, 201, res);
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return next(error);
+    // return next(new AppError('Signup failed, please try again.', 500));
+  }
 });
 
 //? Normal Signup
@@ -167,6 +234,23 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.adminLogin = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return next(new AppError('Please enter your email and password', 400));
+
+  const user = await User.findOne({
+    email: email.toLowerCase(),
+    role: 'admin',
+  }).select('+password');
+
+  if (!user || !(await user.correctPassword(password, user.password)))
+    return next(new AppError('Invalid email or password. Try again.', 400));
+
+  createSendToken(user, 200, res);
+});
+
 exports.logout = catchAsync(async (req, res, next) => {
   res.cookie('jwt', 'LoggedOut', {
     expiresIn: new Date(Date.now() + 10 * 1000),
@@ -255,7 +339,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   if (!token)
     return next(
-      new AppError('You are not logged in. Please login to get access.')
+      new AppError('You are not logged in. Please login to get access.', 401)
     );
 
   // Verify token
@@ -282,6 +366,17 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+// Restrict endpoint to specific role
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role))
+      return next(
+        new AppError('You do not have the permission for this action', 403)
+      );
+    next();
+  };
+};
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get the user with password from collection
