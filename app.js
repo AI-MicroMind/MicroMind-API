@@ -15,6 +15,7 @@ const globalErrorHandler = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
 const chatRouter = require('./routes/chatRoutes');
 const marketplaceRouter = require('./routes/marketplaceRoutes');
+const formRouter = require('./routes/formRoutes');
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api', limiter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/chats', chatRouter);
 app.use('/api/v1/marketplace', marketplaceRouter);
+app.use('/api/v1/forms', formRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
