@@ -104,7 +104,7 @@ exports.signup = catchAsync(async (req, res, next) => {
             chatName: 'AI MicroMind',
             userId: newUser._id,
             chatUrl:
-              'https://aimicromind-platform-2025.onrender.com/canvas/5df08a83-588c-4bf6-be83-057f232675ab',
+              'https://aimicromind-platform-2025.onrender.com/api/v1/prediction/5df08a83-588c-4bf6-be83-057f232675ab',
             chatPhoto: '/static/img/chats/default.jpg',
           },
         ],
