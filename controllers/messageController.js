@@ -164,16 +164,6 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   }
   console.log(uploads);
 
-  console.log('Sending message to platform', {
-    question: req.body.text || '',
-    uploads,
-    overrideConfig: {
-      systemMessage: 'example',
-      maxIterations: 1,
-      sessionId: '111222333',
-      memoryKey: 'example',
-    },
-  });
   const [botResponse, userMessage] = await Promise.all([
     query(
       {
