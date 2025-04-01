@@ -163,20 +163,47 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     }
   }
   console.log(uploads);
+
+  console.log('Sending message to platform', {
+    question: req.body.text || '',
+    uploads,
+    overrideConfig: {
+      systemMessage: 'example',
+      maxIterations: 1,
+      sessionId: '111222333',
+      memoryKey: 'example',
+    },
+  });
   const [botResponse, userMessage] = await Promise.all([
     query(
       {
         question: req.body.text || '',
-        uploads,
         overrideConfig: {
-          systemMessage: 'example',
-          maxIterations: 1,
+          // sessionId: 'example',
           sessionId: req.params.chatId,
           memoryKey: 'example',
+          systemMessagePrompt: 'example',
+          groqApiKey: 'example',
         },
       },
       chatUrl
     ),
+    // query(
+    //   {
+    //     question: req.body.text || '',
+    //     uploads,
+    //     overrideConfig: {
+    //       // systemMessage: 'example',
+    //       // maxIterations: 1,
+    //       sessionId: '1112223331',
+    //       memoryKey: 'example',
+    //       systemMessagePrompt: 'example',
+    //       groqApiKey: 'example',
+    //       // memoryKey: 'example',
+    //     },
+    //   },
+    //   chatUrl
+    // ),
     Message.create({
       chat: req.params.chatId,
       sender: 'user',
