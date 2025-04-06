@@ -58,7 +58,7 @@ module.exports = (resetToken) => {
                     target="_blank"
                     style="text-decoration: none; outline: none; color: #f6eb0f"
                     ><img
-                      src="./aimicromind.png"
+                      src="https://micromind-api-dev.onrender.com/static/icons/aimicromind.png"
                       width="136"
                       height="36"
                       alt="aimicromind"
@@ -156,7 +156,7 @@ module.exports = (resetToken) => {
                               "
                             >
                               <img
-                                src="./static/views/templates/lock.png"
+                                src="https://micromind-api-dev.onrender.com/static/icons/lock.png"
                                 width="48"
                                 height="48"
                                 alt=""
