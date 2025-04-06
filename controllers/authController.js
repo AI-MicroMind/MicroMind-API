@@ -9,6 +9,7 @@ const SendEmail = require('../utils/email');
 const User = require('../models/userModel');
 const Chat = require('../models/chatModel');
 const Message = require('../models/messageModel');
+const resetPasswordTemplate = require('../views/templates/resetPassword');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -273,16 +274,19 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) Send email to user
-  const resetUrl = `${req.protocol}://${req.get(
-    'host'
-  )}/ap1/v1/resetPassword/${resetToken}`;
-  const message = `Forgot your password? You can reset your password using the next link: ${resetUrl}`;
+  // const resetUrl = `${req.protocol}://${req.get(
+  //   'host'
+  // )}/ap1/v1/resetPassword/${resetToken}`;
+  // const message = `Forgot your password? You can reset your password using the next link: ${resetUrl}`;
+  const html = resetPasswordTemplate(resetToken);
+  console.log({ html });
   try {
     await SendEmail({
       // email: user.email,
       email: user.email,
       subject: 'AI MicroMind Reset Password',
-      message,
+      html,
+      // message,
     });
 
     res.status(200).json({
