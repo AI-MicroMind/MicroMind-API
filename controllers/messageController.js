@@ -168,6 +168,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     query(
       {
         question: req.body.text || '',
+        uploads,
         overrideConfig: {
           // sessionId: 'example',
           sessionId: req.params.chatId,
