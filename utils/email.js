@@ -19,8 +19,8 @@ const sendEmail = async (options) => {
     from: 'AI MicroMind <support@aimicromind.com>',
     to: options.email,
     subject: options.subject,
-    text: options.message,
-    // html
+    // text: options.message,
+    html: options.html,
   };
 
   // 3) Send Email
