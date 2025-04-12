@@ -30,6 +30,7 @@ router.post('/:chatId/clear', chatController.clearChatHistory);
 router.get('/:chatId/starred', messageController.getChatStarredMessages);
 
 router.post('/:chatId/default', chatController.setDefaultChat);
+router.post('/:chatId/unset-default', chatController.unsetDefaultChat);
 
 router.use('/:chatId/messages', messageRouter);
 

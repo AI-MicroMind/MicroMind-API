@@ -7,6 +7,7 @@ const APIFeatures = require('../utils/apiFeatures');
 exports.createForm = catchAsync(async (req, res, next) => {
   const form = await Form.create({
     user: req.user._id,
+    marketplaceItem: req.body.marketplaceItem,
     companyName: req.body.companyName,
     country: req.body.country,
     jobTitle: req.body.jobTitle,

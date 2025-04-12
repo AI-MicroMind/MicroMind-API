@@ -9,6 +9,10 @@ const marketplaceItemSchema = new mongoose.Schema({
     type: String,
     required: [true, 'A marketplace item must have a description.'],
   },
+  details: {
+    type: String,
+    required: [true, 'A marketplace item must have details.'],
+  },
   photo: {
     type: String,
     default: '/static/img/marketplace/default.jpg',

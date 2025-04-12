@@ -62,6 +62,20 @@ exports.useMarketplaceItem = catchAsync(async (req, res, next) => {
   if (item.price > 0)
     return next(new AppError('Paid chatbots are not available yet.', 400));
 
+  const userChats = await Chat.find({
+    userId: req.user.id,
+    chatUrl: item.chatUrl,
+  });
+
+  // LIMIT 3 chats per user for each marketplace item
+  if (userChats.length >= 3)
+    return next(
+      new AppError(
+        'You have exceeded the limit chats for that marketplace item (3).',
+        400
+      )
+    );
+
   const chat = await Chat.create({
     userId: req.user.id,
     chatUrl: item.chatUrl,

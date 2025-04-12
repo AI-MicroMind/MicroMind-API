@@ -8,6 +8,11 @@ const formSchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Please provide the user'],
     },
+    marketplaceItem: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'MarketplaceItem',
+      required: [true, 'Please provide the marketplace item'],
+    },
     companyName: {
       type: String,
       minLength: 3,
@@ -53,6 +58,13 @@ formSchema.pre(/^find/, async function (next) {
   this.populate({
     path: 'user',
     select: 'fullName email photo phone',
+  });
+});
+
+formSchema.pre(/^find/, async function (next) {
+  this.populate({
+    path: 'marketplaceItem',
+    select: 'name price photo',
   });
 });
 
