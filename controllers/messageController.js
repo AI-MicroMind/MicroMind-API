@@ -229,6 +229,11 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   }
 
   console.log({ botResponse });
+  if (botResponse.error === 'Unauthorized Access')
+    return next(
+      new AppError('Unautorized access to this chat bot. Try again.')
+    );
+
   if (botResponse.status === 'error')
     return next(new AppError('An error occured with your message. Try again.'));
 
