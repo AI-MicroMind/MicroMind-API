@@ -228,3 +228,43 @@ exports.getDefaultChat = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.unsetDefaultChat = catchAsync(async (req, res, next) => {
+  const defaultChat = await Chat.findOneAndUpdate(
+    {
+      _id: req.params.chatId,
+      userId: req.user.id,
+      default: true,
+    },
+    { default: false },
+    { new: true }
+  );
+
+  if (!defaultChat)
+    return next(new AppError('There is no chat with that ID.', 404));
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Chat is no longer default',
+    data: null,
+  });
+});
+
+exports.editChatName = catchAsync(async (req, res, next) => {
+  const { chatName } = req.body;
+  const updatedChat = await Chat.findOneAndUpdate(
+    { _id: req.params.chatId, userId: req.user.id },
+    { chatName },
+    { new: true }
+  );
+
+  if (!updatedChat)
+    return next(new AppError('There is no chat with that ID.', 404));
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      updatedChat,
+    },
+  });
+});
