@@ -33,4 +33,10 @@ router.delete('/delete-me', userController.getMe, userController.deleteUser);
 
 router.post('/invitation-codes', userController.generateInvitationCode);
 
+// ADMIN ENDPOINTS
+router.use(authController.restrictTo('admin'));
+
+router.get('/:userId', userController.getUser);
+// router.get('/', userController.getAllUsers);
+
 module.exports = router;

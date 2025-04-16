@@ -46,7 +46,7 @@ const filterObj = (obj, ...filterFields) => {
 };
 
 exports.getMe = (req, res, next) => {
-  req.params.id = req.user.id;
+  req.params.userId = req.user.id;
   next();
 };
 
@@ -75,7 +75,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.userId);
 
   res.status(200).json({
     status: 'success',
@@ -84,6 +84,10 @@ exports.getUser = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+// const getAllUsers = catchAsync(async(req,res,next ) => {
+//   const users
+// })
 
 //TODO DELETE CHATS AND MESSAGES RELATED TO THAT USER
 exports.deleteUser = catchAsync(async (req, res, next) => {
