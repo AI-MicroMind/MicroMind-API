@@ -250,7 +250,7 @@ exports.unsetDefaultChat = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.editChatName = catchAsync(async (req, res, next) => {
+exports.updateChatName = catchAsync(async (req, res, next) => {
   const { chatName } = req.body;
   const updatedChat = await Chat.findOneAndUpdate(
     { _id: req.params.chatId, userId: req.user.id },

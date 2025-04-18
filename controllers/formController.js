@@ -50,6 +50,8 @@ exports.getAllForms = catchAsync(async (req, res, next) => {
 
   const forms = await features.query;
 
+  // const forms = await Form.find();
+
   res.status(200).json({
     status: 'success',
     results: forms.length,

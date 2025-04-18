@@ -28,7 +28,7 @@ const marketplaceItemSchema = new mongoose.Schema({
 });
 
 const MarketplaceItem = mongoose.model(
-  'MarketPlaceItem',
+  'MarketplaceItem',
   marketplaceItemSchema
 );
 
