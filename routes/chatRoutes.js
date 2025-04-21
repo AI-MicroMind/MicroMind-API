@@ -32,8 +32,7 @@ router.get('/:chatId/starred', messageController.getChatStarredMessages);
 router.post('/:chatId/default', chatController.setDefaultChat);
 router.post('/:chatId/unset-default', chatController.unsetDefaultChat);
 router.patch('/:chatId', chatController.updateChatName);
-router.patch;
-
+router.get('/chatflows', chatController.getChatFlows);
 router.use('/:chatId/messages', messageRouter);
 
 // router.patch('/messages/:messageId', messageController.starMessage);
