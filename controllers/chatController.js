@@ -1,5 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const axios = require('axios');
 const mongoose = require('mongoose');
 
 const Chat = require('../models/chatModel');
