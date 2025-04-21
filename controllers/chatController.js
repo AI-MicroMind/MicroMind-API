@@ -268,3 +268,24 @@ exports.updateChatName = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getChatFlows = catchAsync(async (req, res, next) => {
+  // send axios request to the chatgpt api with the userId and get the flows
+  const data = await axios.get(
+    `https://aimicromind-platform-2025.onrender.com/api/v1/chatflows`
+    // {
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    //   },
+    //   params: {
+    //     userId: req.user.id,
+    //   },
+    // }
+  );
+  console.log(data);
+  res.status(200).json({
+    status: 'success',
+    data,
+  });
+});
