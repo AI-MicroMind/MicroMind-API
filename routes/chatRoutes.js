@@ -20,6 +20,7 @@ router.post(
 );
 router.get('/my-chats', chatController.getMyChats);
 router.get('/chatflows', chatController.getChatFlows);
+router.get('/iframe', chatController.getIframeChat);
 
 router
   .route('/:chatId')

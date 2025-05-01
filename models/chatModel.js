@@ -26,6 +26,10 @@ const chatSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isIframe: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
