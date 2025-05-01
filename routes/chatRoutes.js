@@ -19,6 +19,8 @@ router.post(
   chatController.createChat
 );
 router.get('/my-chats', chatController.getMyChats);
+router.get('/chatflows', chatController.getChatFlows);
+router.get('/iframe', chatController.getIframeChat);
 
 router
   .route('/:chatId')
@@ -31,7 +33,7 @@ router.get('/:chatId/starred', messageController.getChatStarredMessages);
 
 router.post('/:chatId/default', chatController.setDefaultChat);
 router.post('/:chatId/unset-default', chatController.unsetDefaultChat);
-
+router.patch('/:chatId', chatController.updateChatName);
 router.use('/:chatId/messages', messageRouter);
 
 // router.patch('/messages/:messageId', messageController.starMessage);

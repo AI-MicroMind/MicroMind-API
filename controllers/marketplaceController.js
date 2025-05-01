@@ -2,6 +2,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 const MarketplaceItem = require('../models/marketplaceItemModel');
 const Chat = require('../models/chatModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 //TODO Create Marketplace item (ADMIN ONLY)
 exports.createMarketplaceItem = catchAsync(async (req, res, next) => {
@@ -17,14 +18,23 @@ exports.createMarketplaceItem = catchAsync(async (req, res, next) => {
 
 // Get all marketplace items
 exports.getMarketplace = catchAsync(async (req, res, next) => {
-  const { search } = req.query;
-  const filter = {};
-  if (search) {
-    // make sure the search query is the start of chat name, case-insensitive
-    filter.name = { $regex: `\\b${search}`, $options: 'i' };
-  }
+  const features = new APIFeatures(MarketplaceItem.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .search('name')
+    .paginate();
 
-  const items = await MarketplaceItem.find(filter).sort('createdAt');
+  const items = await features.query;
+
+  // const { search } = req.query;
+  // const filter = {};
+  // if (search) {
+  //   // make sure the search query is the start of chat name, case-insensitive
+  //   filter.name = { $regex: `\\b${search}`, $options: 'i' };
+  // }
+
+  // const items = await MarketplaceItem.find(filter).sort('createdAt');
 
   res.status(200).json({
     status: 'success',

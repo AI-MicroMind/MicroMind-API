@@ -37,6 +37,7 @@ router.post('/invitation-codes', userController.generateInvitationCode);
 router.use(authController.restrictTo('admin'));
 
 router.get('/:userId', userController.getUser);
-// router.get('/', userController.getAllUsers);
+router.delete('/:userId', userController.deleteUser);
+router.get('/', userController.getAllUsers);
 
 module.exports = router;

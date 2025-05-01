@@ -1,5 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const axios = require('axios');
 const mongoose = require('mongoose');
 
 const Chat = require('../models/chatModel');
@@ -64,7 +65,7 @@ exports.createChat = catchAsync(async (req, res, next) => {
 
 exports.getMyChats = catchAsync(async (req, res, next) => {
   const { search } = req.query;
-  const filter = { userId: req.user.id };
+  const filter = { userId: req.user.id, isIframe: false };
   if (search) {
     // make sure the search query is the start of chat name, case-insensitive
     filter.chatName = { $regex: `\\b${search}`, $options: 'i' };
@@ -129,6 +130,31 @@ exports.getChat = catchAsync(async (req, res, next) => {
   if (!chat) return next(new AppError('There is no chat with that ID.', 404));
 
   res.status(200).json({
+    status: 'success',
+    data: {
+      chat,
+    },
+  });
+});
+
+exports.getIframeChat = catchAsync(async (req, res, next) => {
+  let chat = await Chat.findOne({
+    userId: req.user.id,
+    isIframe: true,
+  });
+
+  if (!chat) {
+    chat = await Chat.create({
+      userId: req.user.id,
+      //TODO add the iframe url here
+      chatUrl:
+        'https://aimicromind-platform-2025-1.onrender.com/api/v1/prediction/79a8c81e-af06-4c31-a170-2f48b38d7162', // gpt 4o
+      chatName: `Iframe-${req.user.id}`,
+      isIframe: true,
+    });
+  }
+
+  return res.status(200).json({
     status: 'success',
     data: {
       chat,
@@ -250,7 +276,7 @@ exports.unsetDefaultChat = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.editChatName = catchAsync(async (req, res, next) => {
+exports.updateChatName = catchAsync(async (req, res, next) => {
   const { chatName } = req.body;
   const updatedChat = await Chat.findOneAndUpdate(
     { _id: req.params.chatId, userId: req.user.id },
@@ -266,5 +292,26 @@ exports.editChatName = catchAsync(async (req, res, next) => {
     data: {
       updatedChat,
     },
+  });
+});
+
+exports.getChatFlows = catchAsync(async (req, res, next) => {
+  // send axios request to the chatgpt api with the userId and get the flows
+  const data = await axios.get(
+    `https://aimicromind-platform-2025.onrender.com/api/v1/chatflows`,
+    {
+      headers: {
+        Authorization: 'Bearer s5hLyY8jRpp0xtwDBKhwxnzzwSeYEB-mGsyo96g6m4w',
+        Accept: '*/*',
+      },
+      //   params: {
+      //     userId: req.user.id,
+      //   },
+    }
+  );
+  console.log(data);
+  res.status(200).json({
+    status: 'success',
+    data,
   });
 });

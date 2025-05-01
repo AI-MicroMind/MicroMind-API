@@ -4,6 +4,8 @@ const sharp = require('sharp');
 
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
+const APIFeatures = require('../utils/apiFeatures');
+const Chat = require('../models/chatModel');
 const User = require('../models/userModel');
 
 const multerStorage = multer.memoryStorage();
@@ -74,35 +76,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.userId);
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user,
-    },
-  });
-});
-
-// const getAllUsers = catchAsync(async(req,res,next ) => {
-//   const users
-// })
-
-//TODO DELETE CHATS AND MESSAGES RELATED TO THAT USER
-exports.deleteUser = catchAsync(async (req, res, next) => {
-  const user = await User.findByIdAndDelete(req.user.id);
-
-  if (!user) return next(new AppError('User not found', 404));
-
-  res.status(200).json({
-    status: 'success',
-    message: 'User is deleted successfully',
-  });
-});
-
-//TODO Admin controllers
-
 exports.generateInvitationCode = catchAsync(async (req, res, next) => {
   console.log(req.user);
 
@@ -133,3 +106,52 @@ exports.generateInvitationCode = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getUser = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.userId);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user,
+    },
+  });
+});
+
+// const getAllUsers = catchAsync(async(req,res,next ) => {
+//   const users
+// })
+
+//TODO DELETE CHATS AND MESSAGES RELATED TO THAT USER
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  const chats = await Chat.deleteMany({ userId: req.user.id });
+  console.log(chats);
+
+  if (!user) return next(new AppError('User not found', 404));
+
+  res.status(200).json({
+    status: 'success',
+    message: 'User is deleted successfully',
+  });
+});
+
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const features = new APIFeatures(User.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .search('fullName')
+    .paginate();
+  const users = await features.query;
+
+  res.status(200).json({
+    status: 'success',
+    results: users.length,
+    data: {
+      users,
+    },
+  });
+});
+
+//TODO Admin controllers
