@@ -243,11 +243,15 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     .trim();
 
   // handle generated flowcharts
-  if (botResponse.artifacts || botResponse.agentReasoning.artifacts) {
+  if (botResponse.artifacts || botResponse.agentReasoning) {
     const artifacts =
-      botResponse.artifacts || botResponse.agentReasoning.artifacts;
+      botResponse.artifacts || botResponse.agentReasoning[3].artifacts[0];
+
+    console.log({ artifacts });
     // Extracting the artifact file name from the respons
     const artifacteFile = artifacts.data.split('::')[1];
+    console.log('-------------------------------');
+    console.log({ artifacteFile });
     const chatBaseChunks = chatUrl.split('/prediction/');
     const artifacteUrl = `${chatBaseChunks[0]}/get-upload-file?chatflowId=${chatBaseChunks[1]}&chatId=${req.params.chatId}&fileName=${artifacteFile}`;
     botMessage = await Message.create({
