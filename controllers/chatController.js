@@ -65,7 +65,7 @@ exports.createChat = catchAsync(async (req, res, next) => {
 
 exports.getMyChats = catchAsync(async (req, res, next) => {
   const { search } = req.query;
-  const filter = { userId: req.user.id, isIframe: false };
+  const filter = { userId: req.user.id, isIframe: { $ne: true } };
   if (search) {
     // make sure the search query is the start of chat name, case-insensitive
     filter.chatName = { $regex: `\\b${search}`, $options: 'i' };
