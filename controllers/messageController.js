@@ -243,7 +243,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     .trim();
 
   // handle generated flowcharts
-  if (botResponse.artifacts || botResponse.agentReasoning[3].artifacts) {
+  if (botResponse.artifacts || botResponse.agentReasoning[3].artifacts[0]) {
     const artifacts =
       botResponse.artifacts || botResponse.agentReasoning[3].artifacts[0];
 
