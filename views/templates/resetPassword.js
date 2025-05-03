@@ -374,7 +374,7 @@ module.exports = (resetToken) => {
                             "
                           >
                             <a
-                              href="https://chats.aimicromind.com/reset-password/${resetToken}"
+                              href="https://chat.aimicromind.com/reset-password/${resetToken}"
                               target="_blank"
                               style="
                                 text-decoration: none;
