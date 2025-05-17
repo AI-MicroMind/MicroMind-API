@@ -245,15 +245,18 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   // handle generated flowcharts
   if (
     botResponse.artifacts ||
-    (botResponse.agentReasoning &&
-      botResponse.agentReasoning &&
-      botResponse.agentReasoning[3] &&
-      botResponse.agentReasoning[3].artifacts[0])
+    // Ensure that agentReasoning is an array and has artifacts
+    (Array.isArray(botResponse.agentReasoning) &&
+      botResponse.agentReasoning.some((el) => el?.artifacts && el.artifacts[0]))
   ) {
     const artifacts =
-      botResponse.artifacts || botResponse.agentReasoning[3].artifacts[0];
+      botResponse.artifacts ||
+      // Find the first element in agentReasoning that has artifacts
+      botResponse.agentReasoning.find(
+        (el) => Array.isArray(el.artifacts) && el.artifacts[0]
+      ).artifacts[0];
 
-    console.log({ artifacts });
+    console.dir({ artifacts });
     // Extracting the artifact file name from the respons
     const artifacteFile = artifacts.data.split('::')[1];
     console.log('-------------------------------');
@@ -268,6 +271,33 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       type: 'photo',
     });
   }
+  // // handle generated flowcharts
+  // if (
+  //   botResponse.artifacts ||
+  //   (botResponse.agentReasoning &&
+  //     botResponse.agentReasoning &&
+  //     botResponse.agentReasoning[3] &&
+  //     botResponse.agentReasoning[3].artifacts[0])
+  // )
+  // {
+  //   const artifacts =
+  //     botResponse.artifacts || botResponse.agentReasoning[3].artifacts[0];
+
+  //   console.log({ artifacts });
+  //   // Extracting the artifact file name from the respons
+  //   const artifacteFile = artifacts.data.split('::')[1];
+  //   console.log('-------------------------------');
+  //   console.log({ artifacteFile });
+  //   const chatBaseChunks = chatUrl.split('/prediction/');
+  //   const artifacteUrl = `${chatBaseChunks[0]}/get-upload-file?chatflowId=${chatBaseChunks[1]}&chatId=${req.params.chatId}&fileName=${artifacteFile}`;
+  //   botMessage = await Message.create({
+  //     chat: req.params.chatId,
+  //     sender: 'bot',
+  //     file: artifacteUrl,
+  //     text: botResponse.text,
+  //     type: 'photo',
+  //   });
+  // }
 
   // handle generated photos
   else if (botResponse.text?.startsWith('![]')) {
