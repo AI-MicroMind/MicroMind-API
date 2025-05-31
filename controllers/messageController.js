@@ -254,11 +254,11 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       // Find the first element in agentReasoning that has artifacts
       botResponse.agentReasoning.find(
         (el) => Array.isArray(el.artifacts) && el.artifacts[0]
-      ).artifacts[0];
+      ).artifacts;
 
     console.dir({ artifacts });
     // Extracting the artifact file name from the respons
-    const artifacteFile = artifacts.data.split('::')[1];
+    const artifacteFile = artifacts[0].data.split('::')[1];
     console.log('-------------------------------');
     console.log({ artifacteFile });
     const chatBaseChunks = chatUrl.split('/prediction/');
