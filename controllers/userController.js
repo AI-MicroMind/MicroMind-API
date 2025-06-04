@@ -76,18 +76,56 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.generateInvitationCode = catchAsync(async (req, res, next) => {
-  console.log(req.user);
+// exports.generateInvitationCode = catchAsync(async (req, res, next) => {
+//   console.log(req.user);
 
+//   const user = await User.findById(req.user.id);
+
+//   if (
+//     user.invitationCodes.length > 0 &&
+//     user.email !== 'azanaty@aimicromind.com'
+//   ) {
+//     return next(
+//       new AppError(
+//         'You have reached the maximum number of invitation codes',
+//         400
+//       )
+//     );
+//   }
+
+//   let newCodes = [];
+
+//   if (user.email === 'azanaty@aimicromind.com') {
+//     newCodes = Array.from({ length: 10 }, () => ({
+//       code: uuidv4().split('-')[0],
+//       used: false,
+//     }));
+//   } else {
+//     newCodes = Array.from({ length: 3 }, () => ({
+//       code: uuidv4().split('-')[0],
+//       used: false,
+//     }));
+//   }
+
+//   // console.log({ newCodes });
+//   user.invitationCodes.push(...newCodes);
+//   await user.save({ validateBeforeSave: false });
+
+//   // console.log(user.invitationCodes);
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       codes: newCodes,
+//     },
+//   });
+// });
+exports.generateInvitationCode = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
-  if (
-    user.invitationCodes.length > 0 &&
-    user.email !== 'azanaty@aimicromind.com'
-  ) {
+  if (user.email !== 'azanaty@aimicromind.com') {
     return next(
       new AppError(
-        'You have reached the maximum number of invitation codes',
+        'Sorry, you are currently not allowed to generate invitation codes.',
         400
       )
     );
@@ -95,17 +133,10 @@ exports.generateInvitationCode = catchAsync(async (req, res, next) => {
 
   let newCodes = [];
 
-  if (user.email === 'azanaty@aimicromind.com') {
-    newCodes = Array.from({ length: 10 }, () => ({
-      code: uuidv4().split('-')[0],
-      used: false,
-    }));
-  } else {
-    newCodes = Array.from({ length: 3 }, () => ({
-      code: uuidv4().split('-')[0],
-      used: false,
-    }));
-  }
+  newCodes = Array.from({ length: 100 }, () => ({
+    code: uuidv4().split('-')[0],
+    used: false,
+  }));
 
   // console.log({ newCodes });
   user.invitationCodes.push(...newCodes);
