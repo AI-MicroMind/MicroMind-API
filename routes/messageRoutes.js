@@ -25,4 +25,6 @@ router.post(
   messageController.exportToDocx
 );
 
+// router.post('/test-streaming', messageController.testStreaming);
+
 module.exports = router;
