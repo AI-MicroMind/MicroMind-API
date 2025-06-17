@@ -1,12 +1,60 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 const MarketplaceItem = require('../models/marketplaceItemModel');
 const Chat = require('../models/chatModel');
 const APIFeatures = require('../utils/apiFeatures');
 
-//TODO Create Marketplace item (ADMIN ONLY)
+// const multerStorage = multer.diskStorage();
+
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, '/var/uploads/chat-uploads/'); // Specify the directory to store uploaded files
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, `file-${Date.now()}-${file.originalname}`); // Generate a unique filename
+//   },
+// });
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '/var/uploads/img/marketplace/'); // Specify the directory to store uploaded files
+  },
+  filename: (req, file, cb) => {
+    cb(null, `marketplace-${file.originalname}-${Date.now()}`); // Generate a unique filename
+  },
+}); // Store files in memory for processing
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limit image size to 5MB
+});
+
+exports.uploadMarketplaceItemPhoto = upload.single('photo');
+
+//This middleware is for admin only
 exports.createMarketplaceItem = catchAsync(async (req, res, next) => {
-  const newItem = await MarketplaceItem.create(req.body);
+  const newItem = await MarketplaceItem.create({
+    name: req.body.name,
+    description: req.body.description,
+    details: req.body.details,
+    price: req.body.price || 0, // Default to 0 if not provided
+    chatUrl: req.body.chatUrl,
+    photo: req.file
+      ? `/var/uploads/img/marketplace/${req.file.filename}`
+      : undefined,
+    userId: req.user.id, // Assuming the user creating the item is the one making the request
+  });
 
   res.status(201).json({
     status: 'success',
