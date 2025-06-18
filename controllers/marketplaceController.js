@@ -22,7 +22,7 @@ const multerStorage = multer.diskStorage({
     cb(null, '/var/uploads/img/marketplace/'); // Specify the directory to store uploaded files
   },
   filename: (req, file, cb) => {
-    cb(null, `marketplace-${Date.now()}-${req.file.originalname}`); // Generate a unique filename
+    cb(null, `marketplace-${Date.now()}-${file.originalname}`); // Generate a unique filename
   },
 }); // Store files in memory for processing
 
