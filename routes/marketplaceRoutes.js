@@ -13,10 +13,14 @@ router.get('/:itemId', marketplaceController.getMarketplaceItem);
 router.post('/:itemId/use', marketplaceController.useMarketplaceItem);
 
 //TODO Restrict to admin only
+router.use(authController.restrictTo('admin'));
+
 router.post(
   '/',
   marketplaceController.uploadMarketplaceItemPhoto,
   marketplaceController.createMarketplaceItem
 );
+
+router.delete('/:itemId', marketplaceController.deleteMarketplaceItem);
 
 module.exports = router;
