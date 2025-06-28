@@ -1,4 +1,5 @@
 const fs = require('fs');
+const mongoose = require('mongoose');
 const multer = require('multer');
 const HTMLtoDOCX = require('html-to-docx');
 
@@ -59,6 +60,7 @@ async function query(data, chatUrl) {
     },
     body: JSON.stringify(data),
   });
+  console.log({ response });
   const result = await response.json();
   return result;
 }
@@ -169,7 +171,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       {
         question: req.body.text || '',
         uploads,
-        streaming: true,
+        // streaming: true,
         overrideConfig: {
           // sessionId: 'example',
           sessionId: req.params.chatId,
@@ -267,6 +269,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     botMessage = await Message.create({
       chat: req.params.chatId,
       sender: 'bot',
+      // _id: new mongoose.Types.ObjectId(botResponse.chatMessageId),
       file: artifacteUrl,
       text: botResponse.text,
       type: 'photo',
@@ -304,6 +307,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   else if (botResponse.text?.startsWith('![]')) {
     const photoUrl = botResponse.text.split('(')[1].split(')')[0];
     botMessage = await Message.create({
+      // _id: new mongoose.Types.ObjectId(botResponse.chatMessageId),
       chat: req.params.chatId,
       sender: 'bot',
       file: photoUrl,
@@ -311,6 +315,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     });
   } else {
     botMessage = await Message.create({
+      // _id: new mongoose.Types.ObjectId(botResponse.chatMessageId),
       chat: req.params.chatId,
       sender: 'bot',
       text: botResponse.text,
@@ -318,6 +323,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   }
 
   console.log({ botMessage });
+
   console.log(botMessage.text);
 
   // res.status(200).json({
