@@ -57,10 +57,6 @@ const marketplaceItemSchema = new mongoose.Schema({
   requiredFields: {
     type: [
       {
-        name: {
-          type: String,
-          required: [true, 'A required field must have a name.'],
-        },
         label: {
           type: String,
           required: [true, 'A required field must have a label.'],
