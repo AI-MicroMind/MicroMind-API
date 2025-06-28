@@ -142,7 +142,7 @@ exports.createMarketplaceItem = catchAsync(async (req, res, next) => {
     price: req.body.price || 0, // Default to 0 if not provided
     chatUrl: req.body.chatUrl,
     photo: req.file
-      ? `/var/uploads/img/marketplace/${req.file.filename}`
+      ? `/uploads/img/marketplace/${req.file.filename}`
       : undefined,
     userId: req.user.id, // Assuming the user creating the item is the one making the request
     requiredFields: parsedFields, // Optional field for required form fields
