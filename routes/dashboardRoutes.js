@@ -21,4 +21,7 @@ router
   .delete(dashboardController.deleteDashboard);
 //TODO implement updateDashboard
 
+// Dashboard cards routes
+router.post('/:dashboardId/generate-query', dashboardController.generateQuery);
+
 module.exports = router;

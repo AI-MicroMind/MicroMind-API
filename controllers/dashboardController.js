@@ -67,6 +67,7 @@ exports.getMyDashboards = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
+    length: dashboards.length,
     data: {
       dashboards,
     },
@@ -76,7 +77,7 @@ exports.getMyDashboards = catchAsync(async (req, res, next) => {
 exports.getDashboard = catchAsync(async (req, res, next) => {
   const dashboard = await Dashboard.findOne({
     _id: req.params.dashboardId,
-    user,
+    user: req.user._id, // Ensure only the owner can access the dashboard
   });
 
   if (!dashboard) {
@@ -108,6 +109,54 @@ exports.deleteDashboard = catchAsync(async (req, res, next) => {
   });
 });
 
-//TODO gener
+//TODO generate query, execute query, refresh dashboard (execute all queries in cards)
 
-exports.generateQuery = catchAsync(async (req, res, next) => {});
+async function query(data, chatUrl) {
+  const response = await fetch(chatUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  console.log({ response });
+  const result = await response.json();
+  return result;
+}
+
+exports.generateQuery = catchAsync(async (req, res, next) => {
+  const dashboard = await Dashboard.findById(req.params.dashboardId);
+
+  if (!dashboard)
+    return next(new AppError('No dashboard found with that ID.', 404));
+
+  const generatedQuery = await query(
+    {
+      question: req.body.question || '',
+      // overrideConfig: {
+      // sessionId: 'example',
+      //   sessionId: req.params.chatId,
+      //   memoryKey: 'example',
+      //   systemMessagePrompt: 'example',
+      //   groqApiKey: 'example',
+      // },
+    },
+    dashboard.generateQueryUrl
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Query generated successfully',
+    data: {
+      generatedQuery,
+    },
+  });
+});
+
+exports.executeQueries = catchAsync(async (req, res, next) => {
+  const dashboard = await Dashboard.findById(req.params.dashboardId);
+  if (!dashboard)
+    return next(new AppError('No dashboard found with that ID.', 404));
+
+  // const queries = dashboard
+});
