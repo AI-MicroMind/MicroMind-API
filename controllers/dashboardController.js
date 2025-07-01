@@ -4,6 +4,7 @@ const sharp = require('sharp');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 const Dashboard = require('../models/dashboardModel');
+const Card = require('../models/cardModel');
 
 const multerStorage = multer.memoryStorage();
 
@@ -34,7 +35,7 @@ exports.resizeDashboardPhoto = catchAsync(async (req, res, next) => {
 });
 
 exports.createDashboard = catchAsync(async (req, res, next) => {
-  const { title, photo, generateQueryUrl, ExecuteQueryUrl, cards } = req.body;
+  const { title, photo, generateQueryUrl, ExecuteQueryUrl } = req.body;
 
   const dashboard = await Dashboard.create({
     title,
@@ -42,7 +43,6 @@ exports.createDashboard = catchAsync(async (req, res, next) => {
     generateQueryUrl,
     ExecuteQueryUrl,
     user: req.user._id,
-    cards,
   });
 
   res.status(201).json({
@@ -132,31 +132,76 @@ exports.generateQuery = catchAsync(async (req, res, next) => {
 
   const generatedQuery = await query(
     {
-      question: req.body.question || '',
-      // overrideConfig: {
-      // sessionId: 'example',
-      //   sessionId: req.params.chatId,
-      //   memoryKey: 'example',
-      //   systemMessagePrompt: 'example',
-      //   groqApiKey: 'example',
-      // },
+      question: req.body.question,
     },
     dashboard.generateQueryUrl
   );
 
-  res.status(200).json({
+  console.log({ generatedQuery });
+
+  const card = await Card.create({
+    dashboard: dashboard._id,
+    title: req.body.title,
+    query: generatedQuery.text,
+    chartType: req.body.chartType,
+  });
+
+  //? Add the card to the dashboard
+  // dashboard.cards.push(card._id);
+  // await dashboard.save();
+
+  res.status(201).json({
     status: 'success',
     message: 'Query generated successfully',
     data: {
-      generatedQuery,
+      card,
     },
   });
 });
 
-exports.executeQueries = catchAsync(async (req, res, next) => {
+// Endpoint to execute all queries in the dashboard cards
+exports.renderDashboard = catchAsync(async (req, res, next) => {
   const dashboard = await Dashboard.findById(req.params.dashboardId);
   if (!dashboard)
     return next(new AppError('No dashboard found with that ID.', 404));
 
-  // const queries = dashboard
+  const cards = await Card.find({
+    dashboard: req.params.dashboardId,
+  });
+
+  if (!cards || cards.length === 0) {
+    return next(new AppError('No cards found for this dashboard.', 404));
+  }
+
+  // Execute all queries in the cards
+  const results = await Promise.all(
+    cards.map(async (card) => {
+      const generatedQuery = await query(
+        {
+          question: card.query,
+        },
+        dashboard.ExecuteQueryUrl
+      );
+
+      return {
+        cardId: card._id,
+        question: card.question,
+        chartType: card.chartType,
+        query: card.query, // assuming the agent returns this
+        chartType: card.chartType,
+        chartData: generatedQuery.text, // if returned
+      };
+    })
+  );
+
+  console.log({ results });
+
+  res.status(200).json({
+    status: 'success',
+    length: results.length,
+    data: {
+      dashboard,
+      cards: results,
+    },
+  });
 });

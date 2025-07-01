@@ -89,6 +89,8 @@ formSchema.pre(/^find/, async function (next) {
     path: 'user',
     select: 'fullName email photo phone',
   });
+
+  next();
 });
 
 formSchema.pre(/^find/, async function (next) {
@@ -96,6 +98,8 @@ formSchema.pre(/^find/, async function (next) {
     path: 'marketplaceItem',
     select: 'name price photo',
   });
+
+  next();
 });
 
 const Form = mongoose.model('Form', formSchema);

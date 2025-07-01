@@ -23,5 +23,6 @@ router
 
 // Dashboard cards routes
 router.post('/:dashboardId/generate-query', dashboardController.generateQuery);
+router.get('/:dashboardId/render', dashboardController.renderDashboard);
 
 module.exports = router;

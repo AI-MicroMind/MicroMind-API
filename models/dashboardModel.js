@@ -28,23 +28,38 @@ const dashboardSchema = new mongoose.Schema(
     },
     cards: [
       {
-        question: {
-          type: String,
-          required: [true, 'A card must have a question.'],
-        },
-
-        chartType: {
-          type: String,
-          enum: ['bar', 'line', 'pie', 'radar', 'doughnut'],
-          required: [true, 'A card must have a chart type.'],
-        },
+        type: mongoose.Schema.ObjectId,
+        ref: 'Card',
       },
     ],
+    // cards: [
+    //   {
+    //     question: {
+    //       type: String,
+    //       required: [true, 'A card must have a question.'],
+    //     },
+
+    //     chartType: {
+    //       type: String,
+    //       enum: ['bar', 'line', 'pie', 'radar', 'doughnut'],
+    //       required: [true, 'A card must have a chart type.'],
+    //     },
+    //   },
+    // ],
   },
   {
     timestamps: true,
   }
 );
+
+// populate  cards when fetching dashboards
+dashboardSchema.pre(/^findOne/, function (next) {
+  this.populate({
+    path: 'cards',
+    select: 'title query chartType',
+  });
+  next();
+});
 
 const Dashboard = mongoose.model('Dashboard', dashboardSchema);
 
