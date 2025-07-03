@@ -187,6 +187,7 @@ exports.renderDashboard = catchAsync(async (req, res, next) => {
 
       return {
         cardId: card._id,
+        title: card.title,
         question: card.question,
         chartType: card.chartType,
         query: card.query, // assuming the agent returns this
@@ -205,5 +206,21 @@ exports.renderDashboard = catchAsync(async (req, res, next) => {
       dashboard,
       cards: results,
     },
+  });
+});
+
+exports.deleteCard = catchAsync(async (req, res, next) => {
+  const card = await Card.findOneAndDelete({
+    _id: req.params.cardId,
+    // dashboard: req.params.dashboardId,
+  });
+
+  if (!card) {
+    return next(new AppError('No card found with that ID.', 404));
+  }
+
+  res.status(204).json({
+    status: 'success',
+    message: 'Card deleted successfully',
   });
 });
