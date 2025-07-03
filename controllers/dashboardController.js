@@ -39,7 +39,9 @@ exports.createDashboard = catchAsync(async (req, res, next) => {
 
   const dashboard = await Dashboard.create({
     title,
-    photo,
+    photo: req.file
+      ? `/uploads/img/dashboards/${req.file.filename}`
+      : undefined,
     generateQueryUrl,
     ExecuteQueryUrl,
     user: req.user._id,
