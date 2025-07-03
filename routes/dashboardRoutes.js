@@ -24,6 +24,6 @@ router
 // Dashboard cards routes
 router.post('/:dashboardId/generate-query', dashboardController.generateQuery);
 router.get('/:dashboardId/render', dashboardController.renderDashboard);
-router.delete('/card/:cardId', dashboardController.deleteCard);
+router.delete('/cards/:cardId', dashboardController.deleteCard);
 
 module.exports = router;
