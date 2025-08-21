@@ -5,11 +5,11 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
+// const xss = require('xss-clean');
 // const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
-
+const traceRouter = require('./routes/traceRoutes');
 const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
 const userRouter = require('./routes/userRoutes');
@@ -45,8 +45,10 @@ app.use(compression());
 // Security middlewares
 app.use(mongoSanitize());
 app.use(helmet());
-app.use(xss());
+// app.use(xss());
 // app.use(hpp())
+
+
 
 const limiter = rateLimit({
   windowMs: 15 * 1000 * 60,
@@ -63,6 +65,7 @@ app.use('/api/v1/chats', chatRouter);
 app.use('/api/v1/marketplace', marketplaceRouter);
 app.use('/api/v1/forms', formRouter);
 app.use('/api/v1/dashboards', dashboardRouter);
+app.use('/api/v1/traces', traceRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
