@@ -1,4 +1,5 @@
 const fs = require('fs');
+const mongoose = require('mongoose');
 const multer = require('multer');
 const HTMLtoDOCX = require('html-to-docx');
 
@@ -59,6 +60,7 @@ async function query(data, chatUrl) {
     },
     body: JSON.stringify(data),
   });
+  console.log({ response });
   const result = await response.json();
   return result;
 }
@@ -169,6 +171,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
       {
         question: req.body.text || '',
         uploads,
+        // streaming: true,
         overrideConfig: {
           // sessionId: 'example',
           sessionId: req.params.chatId,
@@ -266,6 +269,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     botMessage = await Message.create({
       chat: req.params.chatId,
       sender: 'bot',
+      // _id: new mongoose.Types.ObjectId(botResponse.chatMessageId),
       file: artifacteUrl,
       text: botResponse.text,
       type: 'photo',
@@ -303,6 +307,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   else if (botResponse.text?.startsWith('![]')) {
     const photoUrl = botResponse.text.split('(')[1].split(')')[0];
     botMessage = await Message.create({
+      // _id: new mongoose.Types.ObjectId(botResponse.chatMessageId),
       chat: req.params.chatId,
       sender: 'bot',
       file: photoUrl,
@@ -310,6 +315,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     });
   } else {
     botMessage = await Message.create({
+      // _id: new mongoose.Types.ObjectId(botResponse.chatMessageId),
       chat: req.params.chatId,
       sender: 'bot',
       text: botResponse.text,
@@ -317,6 +323,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   }
 
   console.log({ botMessage });
+
   console.log(botMessage.text);
 
   // res.status(200).json({
@@ -471,70 +478,35 @@ exports.exportToDocx = catchAsync(async (req, res, next) => {
   res.send(docxBuffer);
 });
 
-// exports.exportToDocx2 = catchAsync(async (req, res, next) => {
+// const { FlowiseClient } = require('flowise-sdk');
 
-//   // Set headers for file download
-//   res.setHeader(
-//     'Content-Disposition',
-//     `attachment; filename="AI-MicroMind-${Date.now()}.docx"`
-//   );
-//   res.setHeader(
-//     'Content-Type',
-//     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-//   );
+// exports.testStreaming = catchAsync(async (req, res, next) => {
+//   const client = new FlowiseClient({
+//     baseUrl: 'https://aimicromind-platform-2025.onrender.com',
+//   });
 
-//   res.send(docxBuffer);
-// })
+//   try {
+//     // For streaming prediction
+//     const prediction = await client.createPrediction({
+//       chatflowId: '/api/v1/prediction/c0b6f3a7-f5d6-49ae-8333-ef65b14f98d1',
+//       question: 'Explain to me software engineering in simple terms',
+//       streaming: true,
+//     });
 
-// const htmlContent =
-//   '<p>Here are the top sales representatives based on their achievement percentages:</p>';
-//   const htmlContent = `
-//   <p>Here are the top sales representatives based on their achievement percentages:</p>
-// <table>
-// <thead>
-// <tr>
-// <th><strong>Sales Representative</strong></th>
-// <th><strong>Sales Rep Number</strong></th>
-// <th><strong>Total Sales</strong></th>
-// <th><strong>Total Target</strong></th>
-// <th><strong>Achievement Percentage</strong></th>
-// </tr>
-// </thead>
-// <tbody><tr>
-// <td>عمر طارق ناصر</td>
-// <td>513</td>
-// <td>303,530.49</td>
-// <td>100,656.56</td>
-// <td>301.55%</td>
-// </tr>
-// <tr>
-// <td>هيثم عبد السادة</td>
-// <td>514</td>
-// <td>225,253.47</td>
-// <td>113,031.76</td>
-// <td>199.28%</td>
-// </tr>
-// <tr>
-// <td>طارق حسين محمد</td>
-// <td>704</td>
-// <td>169,197.27</td>
-// <td>91,564.53</td>
-// <td>184.78%</td>
-// </tr>
-// <tr>
-// <td>مالك خالد عباس</td>
-// <td>222</td>
-// <td>112,362.35</td>
-// <td>62,872.05</td>
-// <td>178.72%</td>
-// </tr>
-// <tr>
-// <td>أحمد أيوب محمد-FR</td>
-// <td>561</td>
-// <td>111,318.22</td>
-// <td>63,471.70</td>
-// <td>175.38%</td>
-// </tr>
-// </tbody></table>
-// <p>These representatives have demonstrated exceptional performance by significantly surpassing their sales targets.</p>
-// `;
+//     for await (const chunk of prediction) {
+//       // {event: "token", data: "hello"}
+//       console.log(chunk);
+//     }
+
+//     res.status(200).json({
+//       status: 'success',
+//       message: 'Streaming test completed successfully',
+//       data: {
+//         prediction,
+//         chunk,
+//       },
+//     });
+//   } catch (error) {
+//     console.error('Error:', error);
+//   }
+// });

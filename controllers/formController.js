@@ -4,16 +4,38 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 const APIFeatures = require('../utils/apiFeatures');
 
+// exports.createForm = catchAsync(async (req, res, next) => {
+//   const form = await Form.create({
+//     user: req.user._id,
+//     marketplaceItem: req.body.marketplaceItem,
+//     companyName: req.body.companyName,
+//     country: req.body.country,
+//     jobTitle: req.body.jobTitle,
+//     companyIndustry: req.body.companyIndustry,
+//     clientId: req.body.clientId,
+//     clientSecret: req.body.clientSecret,
+//   });
+
+//   res.status(201).json({
+//     status: 'success',
+//     data: {
+//       form,
+//     },
+//   });
+// });
+
 exports.createForm = catchAsync(async (req, res, next) => {
+  // const marketplaceItem = await Form.findById(req.body.marketplaceItem);
+
+  // if(!marketplaceItem || !req.body.responses) {
+  //   return next(new AppError('No marketplace item found with that ID', 404));
+  // }
+
   const form = await Form.create({
     user: req.user._id,
     marketplaceItem: req.body.marketplaceItem,
-    companyName: req.body.companyName,
-    country: req.body.country,
-    jobTitle: req.body.jobTitle,
-    companyIndustry: req.body.companyIndustry,
-    clientId: req.body.clientId,
-    clientSecret: req.body.clientSecret,
+    responses: req.body.responses,
+    status: 'pending',
   });
 
   res.status(201).json({
