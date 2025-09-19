@@ -403,7 +403,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // 3) If so, update user password
   user.password = req.body.newPassword;
   user.confirmPassword = req.body.confirmPassword;
-  await user.save();
+  await user.save({ runValidators: false });
 
   // log the user in
   createSendToken(user, 200, res);
