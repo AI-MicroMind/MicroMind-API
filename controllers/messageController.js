@@ -19,10 +19,10 @@ const multerFilter = (req, file, cb) => {
     file.mimetype === 'application/pdf' ||
     file.mimetype === 'application/msword' || // doc files
     file.mimetype ===
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || // docx
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || // docx
     file.mimetype === 'application/vnd.ms-excel' || //xls
     file.mimetype ===
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' //xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' //xls
   ) {
     cb(null, true);
   } else {
@@ -53,16 +53,72 @@ exports.uploadMessagefile = upload.single('file');
 //--------------------------------------------------
 
 async function query(data, chatUrl) {
-  const response = await fetch(chatUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-  console.log({ response });
-  const result = await response.json();
-  return result;
+  try {
+    // Validate chatUrl
+    if (!chatUrl || typeof chatUrl !== 'string') {
+      console.error('Invalid chat URL provided:', chatUrl);
+      return {
+        success: false,
+        status: 'error',
+        error: 'Invalid chat URL',
+        message: 'Chat URL is missing or invalid. Please check your chat configuration.',
+      };
+    }
+
+    console.log('Sending request to:', chatUrl);
+    console.log('Request data:', JSON.stringify(data, null, 2));
+
+    const response = await fetch(chatUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    console.log('Response status:', response.status);
+    console.log('Response OK:', response.ok);
+
+    // Check if response is OK (status 200-299)
+    if (!response.ok) {
+      let errorText = '';
+      try {
+        errorText = await response.text();
+        console.error('API Error Response:', errorText);
+      } catch (textError) {
+        console.error('Could not read error response text:', textError);
+      }
+
+      return {
+        success: false,
+        status: 'error',
+        error: `API returned status ${response.status}`,
+        message:
+          errorText ||
+          `Failed to get response from chatbot API (Status: ${response.status})`,
+      };
+    }
+
+    const result = await response.json();
+    console.log('API Response received successfully');
+    console.log('Response data:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error('Error in query function:', error);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    });
+
+    return {
+      success: false,
+      status: 'error',
+      error: error.message || 'Network error',
+      message:
+        'Failed to connect to chatbot API. Please check the chat URL and network connection, then try again.',
+    };
+  }
 }
 
 exports.sendMessage = catchAsync(async (req, res, next) => {
@@ -112,7 +168,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     else if (
       req.file.mimetype === 'application/msword' || // doc files
       req.file.mimetype ===
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // docx
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // docx
     ) {
       messageType = 'file';
       const fileBuffer = fs.readFileSync(req.file.path);
@@ -129,7 +185,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     else if (
       req.file.mimetype === 'application/vnd.ms-excel' || //xls
       req.file.mimetype ===
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' //xls
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' //xls
     ) {
       messageType = 'file';
       const fileBuffer = fs.readFileSync(req.file.path);
@@ -232,18 +288,49 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   }
 
   console.log({ botResponse });
-  if (botResponse.error === 'Unauthorized Access')
-    return next(
-      new AppError('Unautorized access to this chat bot. Try again.')
-    );
 
-  if (botResponse.status === 'error')
-    return next(new AppError('An error occured with your message. Try again.'));
+  // Handle unauthorized access error
+  if (botResponse.error === 'Unauthorized Access') {
+    botMessage = await Message.create({
+      chat: req.params.chatId,
+      text: 'Unauthorized access to this chatbot. Please check your permissions and try again.',
+      sender: 'bot',
+    });
 
-  // Remove imgur links from the response
-  botResponse.text = botResponse.text
-    .replace(/!\[.*?\]\(https?:\/\/i\.imgur\.com\/[^\)]+\)/g, '')
-    .trim();
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        botMessage,
+        userMessage,
+      },
+    });
+  }
+
+  // Handle general error status
+  if (botResponse.status === 'error') {
+    botMessage = await Message.create({
+      chat: req.params.chatId,
+      text:
+        botResponse.message ||
+        'An error occurred with your message. Please try again.',
+      sender: 'bot',
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        botMessage,
+        userMessage,
+      },
+    });
+  }
+
+  // Remove imgur links from the response (with safety check)
+  if (botResponse.text) {
+    botResponse.text = botResponse.text
+      .replace(/!\[.*?\]\(https?:\/\/i\.imgur\.com\/[^\)]+\)/g, '')
+      .trim();
+  }
 
   // handle generated flowcharts
   if (
